@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IBM Cloud Synergies Map</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23161616'/%3E%3Ccircle cx='50' cy='50' r='10' fill='%230f62fe'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./css/app.css?v=lane-filter">
+</head>
+<body>
+  <div id="app">
+    <header class="cds-shell">
+      <div class="cds-shell__bar1">
+        <div class="cds-shell__brand">
+          <span class="cds-shell__wordmark">IBM Cloud</span>
+          <span class="cds-shell__divider" aria-hidden="true"></span>
+          <span class="cds-shell__product">IBM Cloud Synergies Map</span>
+        </div>
+        <nav id="view-switch" class="view-switch" aria-label="Map view"></nav>
+        <div class="cds-shell__meta">
+          <span class="cds-shell__meta-text" id="meta-text">Infrastructure</span>
+          <button type="button" class="cds-shell__theme-btn" id="theme-btn" aria-label="Toggle theme">
+            <span class="icon-glyph" aria-hidden="true">◐</span>
+          </button>
+        </div>
+      </div>
+      <div class="cds-shell__bar2">
+        <div class="search-container">
+          <label class="visually-hidden" for="search">Search services</label>
+          <input id="search" class="search-input" type="search" placeholder="Search services, descriptions, questions…" autocomplete="off">
+          <button type="button" class="search-clear" id="search-clear" aria-label="Clear search">×</button>
+        </div>
+        <div class="search-results-count" id="search-count" hidden></div>
+        <nav id="play-legend" aria-label="Lane filter"></nav>
+      </div>
+    </header>
+
+    <div id="main">
+      <section id="map-area" aria-label="Connection map">
+        <svg id="svg-connections" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div id="lanes"></div>
+        <div id="nodes"></div>
+      </section>
+
+      <aside id="sidebar" aria-label="Service detail">
+        <div id="sidebar-header">
+          <span class="sidebar-title">Detail</span>
+          <button type="button" id="reset-btn">Clear selection</button>
+        </div>
+        <div id="sidebar-inner"></div>
+      </aside>
+    </div>
+
+    <footer id="footer">
+      <div class="footer-stats" id="footer-stats"></div>
+      <span class="footer-hint" id="footer-hint">Search services · click a hub, then a lane to filter its integrations</span>
+    </footer>
+  </div>
+  <script type="module" src="./js/app.js?v=lane-filter"></script>
+</body>
+</html>

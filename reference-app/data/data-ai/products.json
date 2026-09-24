@@ -1,0 +1,403 @@
+[
+  {
+    "id": "vpc",
+    "label": "IBM Cloud VPC",
+    "cat": "iaas",
+    "plays": [
+      0
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/vpc",
+    "desc": "Software-defined private network for virtual servers, load balancers, and attached IBM Cloud services. Full IaaS mapping lives on the Infrastructure view.",
+    "value": "The x86 landing zone. Data & AI products attach here rather than replacing VPC. Tie-ins for this view are not drawn yet.",
+    "questions": [
+      "Is this a new VPC landing zone, or an existing one that Data & AI services should land on?",
+      "Will watsonx, databases, or data integration run in this VPC?",
+      "Are IKS or ROKS clusters going to land on these subnets?",
+      "Full IaaS mapping lives on the Infrastructure view. Data & AI edges are next."
+    ],
+    "competitors": [
+      "Amazon VPC",
+      "Azure Virtual Network",
+      "Google Cloud VPC"
+    ],
+    "differentiators": [
+      "Native home for IKS and ROKS workers",
+      "Transit Gateway to PowerVS",
+      "VPE fabric for platform services"
+    ]
+  },
+  {
+    "id": "iks",
+    "label": "IBM Kubernetes Service",
+    "cat": "iaas",
+    "plays": [
+      0
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/containers",
+    "desc": "Managed Kubernetes on IBM Cloud VPC. Full IaaS mapping lives on the Infrastructure view.",
+    "value": "The upstream Kubernetes cluster that Data & AI runtimes can land on. Tie-ins for this view are not drawn yet.",
+    "questions": [
+      "Is this IKS on VPC rather than classic?",
+      "Will Data & AI workloads run on this cluster?",
+      "Is OpenShift required instead, for operators?",
+      "Full IaaS mapping lives on the Infrastructure view. Data & AI edges are next."
+    ],
+    "competitors": [
+      "Amazon EKS",
+      "Azure Kubernetes Service",
+      "Google Kubernetes Engine"
+    ],
+    "differentiators": [
+      "IBM-operated control plane",
+      "VPC-native workers",
+      "Catalog integrations for IAM, Registry, and Logs"
+    ]
+  },
+  {
+    "id": "roks",
+    "label": "Red Hat OpenShift",
+    "cat": "iaas",
+    "plays": [
+      0
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/openshift",
+    "desc": "Managed OpenShift on IBM Cloud VPC. Full IaaS mapping lives on the Infrastructure view.",
+    "value": "Use when Operators or Red Hat catalog content are the cluster standard. Data & AI tie-ins for this view are not drawn yet.",
+    "questions": [
+      "Is OpenShift already the container platform standard?",
+      "Will Data & AI operators run on this cluster?",
+      "Is IKS enough if they do not need Operators?",
+      "Full IaaS mapping lives on the Infrastructure view. Data & AI edges are next."
+    ],
+    "competitors": [
+      "Red Hat OpenShift on AWS (ROSA)",
+      "Azure Red Hat OpenShift",
+      "Self-managed OpenShift"
+    ],
+    "differentiators": [
+      "IBM-managed OpenShift on VPC",
+      "Red Hat Operator catalog",
+      "Routes plus Ingress"
+    ]
+  },
+  {
+    "id": "code_engine",
+    "label": "IBM Cloud Code Engine",
+    "cat": "iaas",
+    "plays": [
+      0
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/codeengine",
+    "desc": "Managed serverless containers, jobs, and functions in IBM-managed VPC. Full IaaS mapping lives on the Infrastructure view.",
+    "value": "Serverless containers, jobs, and functions. Data & AI tie-ins for this view are not drawn yet.",
+    "questions": [
+      "Do you want containers without managing a cluster?",
+      "Will Data & AI jobs or APIs run on Code Engine instead of IKS/ROKS?",
+      "Is this actually an IKS/ROKS workload?",
+      "Full IaaS mapping lives on the Infrastructure view. Data & AI edges are next."
+    ],
+    "competitors": [
+      "AWS Fargate / Lambda",
+      "Azure Container Apps",
+      "Google Cloud Run"
+    ],
+    "differentiators": [
+      "No cluster operations",
+      "Terraform-manageable",
+      "Not a Kubernetes operator target"
+    ]
+  },
+  {
+    "id": "powervs",
+    "label": "IBM Power Virtual Server",
+    "cat": "iaas",
+    "plays": [
+      0
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas",
+    "desc": "AIX, IBM i, and Linux on Power. Full IaaS mapping lives on the Infrastructure view.",
+    "value": "AIX, IBM i, and Linux on Power landing zone. Data & AI tie-ins for this view are not drawn yet.",
+    "questions": [
+      "Are AIX, IBM i, or Linux on Power workloads in this account?",
+      "Will Data & AI services attach through the same Transit Gateway path as VPC?",
+      "Is this Power next to watsonx or databases in the same account?",
+      "Full IaaS mapping lives on the Infrastructure view. Data & AI edges are next."
+    ],
+    "competitors": [
+      "On-premises Power Systems",
+      "Oracle Cloud Power",
+      "x86 rehost / rewrite"
+    ],
+    "differentiators": [
+      "Native AIX and IBM i",
+      "PER plus Transit Gateway",
+      "Same account as VPC"
+    ]
+  },
+  {
+    "id": "watsonx_code_assistant",
+    "label": "watsonx Code Assistant",
+    "cat": "ai_assistants",
+    "plays": [
+      1
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/watsonx-code-assistant",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "watsonx_orchestrate",
+    "label": "watsonx Orchestrate",
+    "cat": "ai_assistants",
+    "plays": [
+      1
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/watsonx-orchestrate",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "granite",
+    "label": "Granite",
+    "cat": "ai_models",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/granite",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "meta_llama",
+    "label": "Meta Llama",
+    "cat": "ai_models",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/watsonx-ai",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "mistral",
+    "label": "Mistral",
+    "cat": "ai_models",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/watsonx-ai",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "watsonx_ai",
+    "label": "watsonx.ai",
+    "cat": "ai_ops",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/watsonx-ai",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "watsonx_governance",
+    "label": "watsonx.governance",
+    "cat": "ai_ops",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/watsonx-governance",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "watsonx_data",
+    "label": "watsonx.data",
+    "cat": "databases",
+    "plays": [
+      4
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/watsonx-data",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "data_product_hub",
+    "label": "Data Product Hub",
+    "cat": "data_intelligence",
+    "plays": [
+      5
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/data-product-hub",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "knowledge_catalog",
+    "label": "Knowledge Catalog",
+    "cat": "data_intelligence",
+    "plays": [
+      5
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/docs/en/cloud-paks/cp-data/5.1.x?topic=catalogs-ibm-knowledge-catalog",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "manta_lineage",
+    "label": "Manta Data Lineage",
+    "cat": "data_intelligence",
+    "plays": [
+      5
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/manta-data-lineage",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "datastage",
+    "label": "DataStage",
+    "cat": "data_integration",
+    "plays": [
+      6
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/datastage",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "databand",
+    "label": "Databand",
+    "cat": "data_integration",
+    "plays": [
+      6
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/databand",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "streamsets",
+    "label": "StreamSets",
+    "cat": "data_integration",
+    "plays": [
+      6
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/streamsets",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "guardium_dsc",
+    "label": "Guardium Data Security Center",
+    "cat": "data_protect",
+    "plays": [
+      7
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/guardium-data-security-center",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "storage_ceph",
+    "label": "Storage Ceph",
+    "cat": "data_protect",
+    "plays": [
+      7
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/ceph",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  }
+]

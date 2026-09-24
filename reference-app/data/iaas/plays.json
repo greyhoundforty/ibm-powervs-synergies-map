@@ -1,0 +1,80 @@
+{
+  "view": {
+    "id": "iaas",
+    "label": "Infrastructure",
+    "short": "IaaS",
+    "mode": "mapped",
+    "blurb": "VPC, containers, and PowerVS. Default vs possible IBM Cloud connections."
+  },
+  "plays": {
+    "1": {
+      "id": 1,
+      "name": "Compute Platforms",
+      "short": "Compute",
+      "cat": "compute",
+      "varName": "--play-1"
+    },
+    "2": {
+      "id": 2,
+      "name": "Networking",
+      "short": "Networking",
+      "cat": "networking",
+      "varName": "--play-2"
+    },
+    "3": {
+      "id": 3,
+      "name": "Storage & Protection",
+      "short": "Storage",
+      "cat": "storage",
+      "varName": "--play-3"
+    },
+    "4": {
+      "id": 4,
+      "name": "Security",
+      "short": "Security",
+      "cat": "security",
+      "varName": "--play-4"
+    },
+    "5": {
+      "id": 5,
+      "name": "Observability & Ops",
+      "short": "Observability",
+      "cat": "observability",
+      "varName": "--play-5"
+    }
+  },
+  "playOrder": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "categories": [
+    {
+      "id": "compute",
+      "label": "Compute Platforms",
+      "playId": 1
+    },
+    {
+      "id": "networking",
+      "label": "Networking",
+      "playId": 2
+    },
+    {
+      "id": "storage",
+      "label": "Storage & Protection",
+      "playId": 3
+    },
+    {
+      "id": "security",
+      "label": "Security",
+      "playId": 4
+    },
+    {
+      "id": "observability",
+      "label": "Observability & Ops",
+      "playId": 5
+    }
+  ]
+}

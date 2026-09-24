@@ -1,0 +1,151 @@
+{
+  "id": "brms-icc-dr",
+  "hubId": "powervs",
+  "lparId": "restored_lpar",
+  "title": "BRMS + ICC on-prem to COS",
+  "kicker": "On-premises IBM i to IBM Cloud Object Storage",
+  "blurb": "Customer path: on-prem IBM i with BRMS + ICC reaches Cloud Object Storage over site-to-site VPC VPN and a COS VPE. PowerVS is the DR site, not the backup hop. Toggle backup versus cloud restore. Transit Gateway is required so the PowerVS NFS LPAR can pull volumes from the VPE.",
+  "docsUrl": "https://www.ibm.com/docs/en/i/7.4.0?topic=i-backing-up-your-entire-system-cloud",
+  "footerHint": "Backup never enters PowerVS · restore IPL media lands on the NFS LPAR first · double-click a box to rename it in Arrange",
+  "workspace": {
+    "kicker": "PowerVS workspace",
+    "label": "PowerVS",
+    "summary": "PER-enabled PowerVS workspace used only as the DR restore site. The NFS helper LPAR and the restored LPAR live here. Backup traffic from on-prem does not enter this workspace."
+  },
+  "lpar": {
+    "id": "restored_lpar",
+    "kicker": "DR target",
+    "label": "Restored LPAR",
+    "os": "IBM i",
+    "summary": "Empty IBM i VSI that network-installs Licensed Internal Code and the operating system from the NFS LPAR, then recovers remaining BRMS volumes from COS once TCP, BRMS, and ICC are back.",
+    "sellerNote": "This LPAR cannot boot from Cloud Object Storage. QCLDBIPL virtual optical must be on the NFS helper first. Same PowerVS subnet as the NFS LPAR so the two can ping each other.",
+    "docsUrl": "https://www.ibm.com/docs/en/i/7.4.0?topic=i-restoring-data-from-cloud"
+  },
+  "backupToggles": [
+    {
+      "id": "backup",
+      "label": "On-prem backup"
+    },
+    {
+      "id": "restore",
+      "label": "Cloud restore"
+    }
+  ],
+  "groups": [
+    {
+      "id": "networking",
+      "label": "Networking",
+      "playId": 2
+    },
+    {
+      "id": "storage",
+      "label": "Storage",
+      "playId": 3
+    },
+    {
+      "id": "backups",
+      "label": "Restore helpers",
+      "playId": 7
+    }
+  ],
+  "nodes": {
+    "onprem": {
+      "label": "IBM i LPAR",
+      "group": "networking",
+      "role": "Production · BRMS + ICC",
+      "kind": "platform",
+      "status": "ga",
+      "synthetic": true,
+      "summary": "On-premises IBM i with 5770-BR1 and 5733-ICC. BRMS writes QCLDBSYS01 (virtual tape) then QCLDBIPL01 (virtual optical) to local disk. ICC transfers those volumes to COS over HTTPS.",
+      "sellerNote": "Run the control groups in that order so BRMS tape-volume metadata is on the optical set used to boot the DR LPAR. ICC needs local free disk roughly equal to the save size.",
+      "docsUrl": "https://www.ibm.com/docs/en/i/7.4.0?topic=i-backing-up-your-entire-system-cloud"
+    },
+    "vpn": {
+      "label": "On-prem VPN",
+      "group": "networking",
+      "role": "Customer IPsec peer",
+      "kind": "platform",
+      "status": "ga",
+      "synthetic": true,
+      "summary": "Customer VPN appliance. Site-to-site IPsec to the VPC VPN gateway. Local interesting traffic is the IBM i subnet; remote interesting traffic is the VPC subnet that holds the COS VPE.",
+      "sellerNote": "This is not PowerVS VPNaaS. That product ended 14 July 2025. Peer must support NAT-T. Policy-based is what the PowerVS VPN page documents; route-based also works for VPC-only if they want BGP later.",
+      "docsUrl": "https://cloud.ibm.com/docs/vpc?topic=vpc-using-vpn"
+    },
+    "vpc_vpn": {
+      "label": "VPC VPN",
+      "group": "networking",
+      "role": "Site-to-site gateway",
+      "kind": "platform",
+      "status": "ga",
+      "summary": "VPN for VPC terminates the IPsec tunnel. Public IKE/NAT-T addresses are the only internet-exposed IPs in this play. After decryption, packets are on the VPC overlay toward the VPE subnet.",
+      "sellerNote": "Dedicate a /28 or larger subnet for the gateway. Include the VPE subnet in local CIDRs (policy-based) or as a route (route-based). UDP 500/4500 and ESP from the on-prem peer.",
+      "docsUrl": "https://cloud.ibm.com/docs/vpc?topic=vpc-using-vpn"
+    },
+    "vpc": {
+      "label": "VPC",
+      "group": "networking",
+      "role": "Service fabric",
+      "kind": "platform",
+      "status": "ga",
+      "summary": "Customer VPC that owns the VPN gateway, the COS VPE, and the Transit Gateway attachment. Routing tables must accept VPN gateway traffic and Transit Gateway traffic.",
+      "sellerNote": "Same VPC for VPN and VPE so on-prem backup does not need Transit Gateway. Restore from PowerVS does.",
+      "docsUrl": "https://cloud.ibm.com/docs/vpc"
+    },
+    "vpe": {
+      "label": "COS VPE",
+      "group": "networking",
+      "role": "Private service endpoint",
+      "kind": "platform",
+      "status": "ga",
+      "summary": "Virtual Private Endpoint for Cloud Object Storage. ICC uses the COS private or direct HTTPS URI, which must resolve to this reserved IP. Port 443 only.",
+      "sellerNote": "Point CRTS3RICC at the private endpoint, not the public one. IBM i DNS or a host-table entry must map the COS hostname to the VPE IP. PowerVS does not host the VPE.",
+      "docsUrl": "https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-supported-services"
+    },
+    "cos": {
+      "label": "Cloud Object Storage",
+      "group": "storage",
+      "role": "DR object store",
+      "kind": "platform",
+      "status": "ga",
+      "summary": "Bucket that holds BRMS virtual volumes under QBRMS_<system-name>. HMAC service credentials (access key + secret) go into the ICC S3 resource.",
+      "sellerNote": "COS is the store, not the boot device. A new IBM i LPAR cannot IPL from the bucket. Regional bucket in the same region as the VPC/PowerVS pair.",
+      "docsUrl": "https://cloud.ibm.com/docs/cloud-object-storage"
+    },
+    "tgw": {
+      "label": "Transit Gateway",
+      "group": "networking",
+      "role": "Private join",
+      "kind": "platform",
+      "status": "ga",
+      "summary": "Joins the PER PowerVS workspace to the customer VPC so the NFS LPAR can reach the COS VPE. Not on the on-prem backup path.",
+      "sellerNote": "Customer list omitted this. Leave it in. PowerVS cannot attach a VPE; restore pull is PowerVS → TGW → VPC → VPE → COS. Non-PER Cloud Connection is the exception, not the default.",
+      "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-per"
+    },
+    "nfs_lpar": {
+      "label": "IBM i NFS LPAR",
+      "group": "backups",
+      "role": "Network install helper",
+      "kind": "platform",
+      "status": "ga",
+      "synthetic": true,
+      "summary": "Helper IBM i VSI in the DR workspace. Pulls QCLDBIPL virtual optical from COS with CPYFRMCLD, loads an image catalog, exports /install/sysipl over NFS, and serves the target LPAR for LIC/OS install.",
+      "sellerNote": "Needs disk for the IPL image set, not the whole production save. IBM i 7.2+ with current PTFs. Must ping the restored LPAR. BRMS media lives in cloud as QBRMS_<source-system-name>.",
+      "docsUrl": "https://www.ibm.com/docs/en/i/7.4.0?topic=i-restoring-data-from-cloud",
+      "desc": "PowerVS IBM i helper that stages QCLDBIPL optical images from COS and NFS-exports them so the restored LPAR can D-mode / network-install."
+    }
+  },
+  "flows": [
+    {
+      "id": "backup",
+      "label": "On-prem backup",
+      "playId": 2,
+      "steps": ["onprem", "vpn", "vpc_vpn", "vpc", "vpe", "cos"]
+    },
+    {
+      "id": "restore",
+      "label": "Cloud restore",
+      "playId": 3,
+      "steps": ["cos", "vpe", "vpc", "tgw", "nfs_lpar", "powervs"]
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+{
+  "id": "powervs-dr",
+  "hubId": "powervs",
+  "lparId": "dr_lpar",
+  "title": "PowerVS disaster recovery",
+  "kicker": "On-premises Power to IBM Cloud",
+  "blurb": "Each backup option is its own network path from on-premises through Direct Link and Transit Gateway. Toggle FalconStor VTL, Compass, and BRMS + ICC independently. In Arrange mode, drag boxes and double-click any box to rename it.",
+  "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-backup-strategies",
+  "footerHint": "Each row is a backup path · toggle options · double-click a box to rename it in Arrange",
+  "workspace": {
+    "kicker": "PowerVS workspace",
+    "label": "PowerVS",
+    "summary": "PER-enabled PowerVS workspace in IBM Cloud — the DR site. FalconStor StorSafe runs as a separate VSI in this workspace. Compass and BRMS + ICC do not hop through this box on their backup data path; they leave via Transit Gateway into VPC and a VPE."
+  },
+  "lpar": {
+    "id": "dr_lpar",
+    "kicker": "DR LPAR",
+    "label": "Recovery VSI",
+    "os": "IBM i · AIX · Linux",
+    "summary": "One virtual server in the DR workspace — the LPAR you fail over to. IBM i here can run BRMS + ICC. FalconStor is a different VSI, not this LPAR.",
+    "sellerNote": "This play draws a single recovery LPAR so the DR site is readable. A real workspace can host more VSIs. Do not put FalconStor StorSafe on this same LPAR; StorSafe is its own PowerVS instance.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas"
+  },
+  "backupToggles": [
+    {
+      "id": "falconstor",
+      "label": "FalconStor VTL"
+    },
+    {
+      "id": "compass",
+      "label": "Secure Automated Backups with Compass"
+    },
+    {
+      "id": "brms_icc",
+      "label": "BRMS + ICC"
+    }
+  ],
+  "groups": [
+    {
+      "id": "networking",
+      "label": "Networking",
+      "playId": 2
+    },
+    {
+      "id": "storage",
+      "label": "Storage",
+      "playId": 3
+    },
+    {
+      "id": "backups",
+      "label": "Backups",
+      "playId": 7
+    }
+  ],
+  "nodes": {
+    "onprem": {
+      "label": "On-prem",
+      "group": "networking",
+      "role": "Production site",
+      "kind": "platform",
+      "status": "ga",
+      "synthetic": true,
+      "summary": "On-premises Power production. Backup and DR traffic leaves here over Direct Link onto IBM Cloud Transit Gateway.",
+      "sellerNote": "This play uses Direct Link as the on-prem circuit. Site-to-site VPC VPN is the fallback when they do not already have a private circuit. PowerVS VPNaaS ended 14 July 2025.",
+      "docsUrl": "https://cloud.ibm.com/docs/dl"
+    },
+    "direct_link": {
+      "label": "Direct Link",
+      "group": "networking",
+      "role": "Private circuit",
+      "kind": "platform",
+      "status": "ga",
+      "summary": "Private circuit from the on-premises site into IBM Cloud. Attach it to Transit Gateway so PowerVS, the customer VPC, and VPEs are reachable without the public internet.",
+      "sellerNote": "If they do not have Direct Link, the same TGW pattern works with site-to-site VPN terminating on a VPC.",
+      "docsUrl": "https://cloud.ibm.com/docs/dl"
+    },
+    "transit_gateway": {
+      "label": "Transit Gateway",
+      "group": "networking",
+      "role": "Private join",
+      "kind": "platform",
+      "status": "ga",
+      "summary": "Private backbone for the play. Direct Link, the PowerVS PER workspace, and the customer VPC all attach here so backup flows can reach VPC VPEs.",
+      "sellerNote": "PER workspaces use network type power_virtual_server. Cloud Connections are the non-PER exception, not the default.",
+      "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-per"
+    },
+    "vpc": {
+      "label": "VPC",
+      "group": "networking",
+      "role": "Service fabric",
+      "kind": "platform",
+      "status": "ga",
+      "summary": "Customer VPC that hosts VPEs for IBM Cloud services and, for Compass, the path into the Compass backup VPC. PowerVS reaches this VPC over Transit Gateway.",
+      "sellerNote": "This is the landing-zone VPC, not the Compass-managed backup VPC. Do not mix those two.",
+      "docsUrl": "https://cloud.ibm.com/docs/solution-tutorials?topic=solution-tutorials-vpc-transit-power"
+    },
+    "vpe": {
+      "label": "VPE",
+      "group": "networking",
+      "role": "Private service endpoint",
+      "kind": "platform",
+      "status": "ga",
+      "summary": "Virtual Private Endpoint in the VPC. FalconStor and BRMS + ICC use a COS VPE. Compass uses VPEs to Compass Vaults in the dedicated backup VPC.",
+      "sellerNote": "PowerVS does not host the VPE. Traffic is TGW into the VPC subnet that owns the endpoint.",
+      "docsUrl": "https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-supported-services"
+    },
+    "cos": {
+      "label": "Cloud Object Storage",
+      "group": "storage",
+      "role": "Object store",
+      "kind": "platform",
+      "status": "ga",
+      "summary": "IBM Cloud Object Storage is the object target for FalconStor deduplicated tape and for BRMS + ICC (5733-ICC) saves. Compass does not land here — Compass Vaults are a separate target.",
+      "sellerNote": "COS is storage, not the backup product. Do not sell IBM Cloud Backup and Recovery for PowerVS — it is not GA.",
+      "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-per"
+    },
+    "falconstor": {
+      "label": "FalconStor VTL",
+      "group": "backups",
+      "role": "Power-resident VTL",
+      "kind": "optional",
+      "status": "partner",
+      "summary": "FalconStor StorSafe runs as a separate PowerVS instance and presents an iSCSI VTL to IBM i, AIX, and Linux. Long-term store is Cloud Object Storage through a VPC VPE.",
+      "sellerNote": "Use when they already run FalconStor or want to operate the VTL themselves. This is not Compass and not BRMS+ICC writing straight to COS.",
+      "docsUrl": "https://www.falconstor.com/partners/ibm-partnership/powervs-resident-backup/",
+      "desc": "Partner virtual tape library that runs as a PowerVS instance. Application LPARs talk iSCSI to StorSafe; StorSafe deduplicates into IBM Cloud Object Storage."
+    },
+    "compass": {
+      "label": "Compass Managed backup",
+      "group": "backups",
+      "role": "Catalog BaaS",
+      "kind": "platform",
+      "status": "partner",
+      "summary": "Secure Automated Backup with Compass. On-prem Power reaches Compass Vaults over Direct Link → Transit Gateway → VPC → VPE. Vaults are not Cloud Object Storage.",
+      "sellerNote": "Cobalt Iron operated. Dual-copy replicates to a documented DC pair. Do not put other workloads in the Compass backup VPC.",
+      "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-backup-strategies#baas"
+    },
+    "brms_icc": {
+      "label": "BRMS + ICC",
+      "group": "backups",
+      "role": "Self-managed IBM i to COS",
+      "kind": "platform",
+      "status": "ga",
+      "synthetic": true,
+      "summary": "Backup, Recovery and Media Services plus IBM Cloud Storage Solutions for i (5733-ICC). The data path is on-prem → Direct Link → Transit Gateway → VPC → VPE → Cloud Object Storage.",
+      "sellerNote": "Requires 5770-BR1 and 5733-ICC on IBM i. Private COS is the preferred target. AIX uses Storage Protect to COS instead of ICC.",
+      "docsUrl": "https://www.ibm.com/docs/en/i/7.6.0?topic=ssw_ibm_i_76/rzai8/rzai8backupandrecoveryusingBRMSandICC.html",
+      "desc": "IBM i BRMS (5770-BR1) with Cloud Storage Solutions for i (5733-ICC) sends media to IBM Cloud Object Storage."
+    }
+  },
+  "flows": [
+    {
+      "id": "falconstor",
+      "label": "FalconStor VTL",
+      "playId": 7,
+      "steps": ["onprem", "direct_link", "transit_gateway", "powervs", "falconstor", "vpc", "vpe", "cos"]
+    },
+    {
+      "id": "compass",
+      "label": "Compass",
+      "playId": 3,
+      "steps": ["onprem", "direct_link", "transit_gateway", "vpc", "vpe", "compass"]
+    },
+    {
+      "id": "brms_icc",
+      "label": "BRMS + ICC",
+      "playId": 2,
+      "steps": ["onprem", "direct_link", "transit_gateway", "vpc", "vpe", "cos"]
+    }
+  ]
+}

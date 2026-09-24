@@ -1,0 +1,102 @@
+{
+  "view": {
+    "id": "data-ai",
+    "label": "Data & AI",
+    "short": "Data & AI",
+    "mode": "overlay",
+    "blurb": "IaaS compute on top, then the Data platform product set. Mapping of Data & AI tie-ins is next week."
+  },
+  "plays": {
+    "0": {
+      "id": 0,
+      "name": "IaaS Compute",
+      "short": "IaaS",
+      "cat": "iaas",
+      "varName": "--play-0"
+    },
+    "1": {
+      "id": 1,
+      "name": "AI Assistants",
+      "short": "Assistants",
+      "cat": "ai_assistants",
+      "varName": "--play-1"
+    },
+    "2": {
+      "id": 2,
+      "name": "AI Models",
+      "short": "Models",
+      "cat": "ai_models",
+      "varName": "--play-2"
+    },
+    "3": {
+      "id": 3,
+      "name": "AI Tools & Governance",
+      "short": "AI Ops",
+      "cat": "ai_ops",
+      "varName": "--play-3"
+    },
+    "4": {
+      "id": 4,
+      "name": "Databases",
+      "short": "Databases",
+      "cat": "databases",
+      "varName": "--play-4"
+    },
+    "5": {
+      "id": 5,
+      "name": "Data Intelligence",
+      "short": "Intelligence",
+      "cat": "data_intelligence",
+      "varName": "--play-5"
+    },
+    "6": {
+      "id": 6,
+      "name": "Data Integration",
+      "short": "Integration",
+      "cat": "data_integration",
+      "varName": "--play-6"
+    },
+    "7": {
+      "id": 7,
+      "name": "Security & Storage",
+      "short": "Protect",
+      "cat": "data_protect",
+      "varName": "--play-7"
+    }
+  },
+  "playOrder": [0, 1, 2, 3, 4, 5, 6, 7],
+  "categories": [
+    { "id": "iaas", "label": "IaaS Compute", "playId": 0 },
+    { "id": "ai_assistants", "label": "AI Assistants", "playId": 1 },
+    {
+      "id": "ai_models",
+      "label": "AI Models",
+      "playId": 2
+    },
+    {
+      "id": "ai_ops",
+      "label": "AI Tools & Governance",
+      "playId": 3
+    },
+    {
+      "id": "databases",
+      "label": "Databases",
+      "playId": 4
+    },
+    {
+      "id": "data_intelligence",
+      "label": "Data Intelligence",
+      "playId": 5
+    },
+    {
+      "id": "data_integration",
+      "label": "Data Integration",
+      "playId": 6
+    },
+    {
+      "id": "data_protect",
+      "label": "Security & Storage",
+      "playId": 7
+    }
+  ]
+}

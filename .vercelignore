@@ -1,0 +1,17 @@
+# Beads & development sockets
+.beads
+.bob
+.claude
+
+# Documentation & reference materials
+docs
+reference-app
+
+# Node & dependencies
+node_modules
+.npm
+package-lock.json
+
+# Local scripts & temp files
+scripts
+*.log

@@ -1,0 +1,833 @@
+[
+  {
+    "id": "powervs_offprem",
+    "label": "PowerVS (IBM Data Center)",
+    "cat": "powervs",
+    "plays": [0],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started",
+    "desc": "Enterprise Power Systems (Power10, Power11, and Power9 for existing clients) in IBM Cloud data centers. Note: From August 2026, new client deployments must select Power10 or Power11; Power9 is restricted to existing PowerVS clients. Supports multitenant virtual servers, dedicated hosts, shared processor pools (SPP), and Power Edge Router (PER) connectivity.",
+    "value": "Lift and shift or modernize AIX, IBM i, and Linux workloads onto cloud-hosted IBM Power10/Power11 hardware without application re-architecting, backed by enterprise SLA and low-latency access to IBM Cloud services.",
+    "questions": [
+      "Do you have enterprise AIX, IBM i, or Linux on Power workloads running on-premises?",
+      "Are you looking to migrate to modern Power10 or Power11 server architectures in cloud?",
+      "Are you an existing PowerVS client needing Power9 capacity, or a new client onboarding to Power10/Power11?",
+      "Do your Power workloads require sub-millisecond interconnects to IBM Cloud VPC x86 apps or Cloud Object Storage?",
+      "Are you running SAP HANA or SAP NetWeaver on Power?"
+    ],
+    "competitors": [
+      "On-premises Power servers",
+      "Skytap on Azure",
+      "x86 code rewrite / refactoring"
+    ],
+    "differentiators": [
+      "Native IBM Power hardware hosted and managed directly by IBM (Power10/Power11 standard; Power9 grandfathered)",
+      "Power Edge Router (PER) integration with Transit Gateway and VPC",
+      "Granular fractional core billing and shared processor pools",
+      "Official IBM i license mobility and software tier support"
+    ]
+  },
+  {
+    "id": "powervs_private_cloud",
+    "label": "PowerVS Private Cloud (On-Prem Pod)",
+    "cat": "powervs",
+    "plays": [0],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started-pc",
+    "desc": "Power Virtual Server infrastructure deployed directly into the customer's on-premises data center as a managed pod. Managed via IBM Cloud control plane with local data residency and low latency.",
+    "value": "Delivers the cloud operating model and API-driven automation of PowerVS while keeping compute and data physically resident in your own data center for extreme low latency or strict regulatory compliance.",
+    "questions": [
+      "Do you have strict data residency, sovereign data mandates, or air-gap requirements?",
+      "Do your Power applications require microsecond latency to adjacent on-prem legacy systems?",
+      "Do you want cloud consumption economics and automated management inside your own data center?"
+    ],
+    "competitors": [
+      "Traditional CAPEX on-premises SAN/Server purchases",
+      "AWS Outposts",
+      "Azure Stack"
+    ],
+    "differentiators": [
+      "Standardized PowerVS pod infrastructure installed and managed by IBM in your facility",
+      "Same APIs, Terraform provider, and CLI as IBM Cloud PowerVS",
+      "Direct L2/L3 BGP network peering with customer local network fabrics"
+    ]
+  },
+  {
+    "id": "os_aix",
+    "label": "IBM AIX",
+    "cat": "os",
+    "plays": [1],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-aix-vm-creation",
+    "desc": "Enterprise UNIX operating system (AIX 7.2, 7.3) on PowerVS. Includes IBM stock images, custom image import (mksysb/OVA), SUMA patch management, and RSCT/RMC cluster integration.",
+    "value": "Provides mission-critical reliability, security, and binary compatibility for Oracle Database, SAP NetWeaver, and custom UNIX enterprise applications.",
+    "questions": [
+      "Which versions of AIX (7.1, 7.2, 7.3) are currently running on-premises?",
+      "Are you running enterprise databases like Oracle, Db2, or Sybase on AIX?",
+      "Do you manage systems with NIM (Network Installation Management) or SUMA?",
+      "Do you require high availability with PowerHA SystemMirror?"
+    ],
+    "competitors": [
+      "Solaris on SPARC",
+      "HP-UX on Itanium",
+      "Linux x86 rehosting"
+    ],
+    "differentiators": [
+      "Decades of binary backward compatibility without recompiling binaries",
+      "Dynamic LPAR reconfiguration of CPU and RAM without downtime",
+      "Native IBM Cloud stock images with cloud-init customization"
+    ]
+  },
+  {
+    "id": "os_ibmi",
+    "label": "IBM i (AS/400)",
+    "cat": "os",
+    "plays": [1],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ibmi-configure",
+    "desc": "Integrated operating environment with built-in Db2 database, robust security, and subsystem architecture (IBM i 7.3, 7.4, 7.5). Supports P05 to P30 software tiers, LPP licensing bundles, and Virtual Serial Numbers (VSN).",
+    "value": "Runs Core ERP, financial, and manufacturing applications without re-platforming. Enables access via modern REST APIs, ACS 5250, and seamless hybrid cloud extensions.",
+    "questions": [
+      "What IBM i software tier (P05, P10, P20, P30) and OS version is your workload running?",
+      "Are ISV applications tied to hardware CPU serial numbers (requiring Virtual Serial Numbers)?",
+      "Do you use BRMS for backup and media cataloging?",
+      "Do you need to integrate Db2 for i data with cloud analytics and AI?"
+    ],
+    "competitors": [
+      "Legacy AS/400 on-premises hardware",
+      "Custom mainframe emulation / x86 rewrite"
+    ],
+    "differentiators": [
+      "Integrated Db2 database and object-based operating environment",
+      "Virtual Serial Numbers (VSN) protect legacy ISV software licensing investments",
+      "BYOL and IBM-provided Cloud OS subscription tiers with LPP bundles"
+    ]
+  },
+  {
+    "id": "os_linux",
+    "label": "Linux on Power (RHEL / SLES)",
+    "cat": "os",
+    "plays": [1],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-full-linux-subscription",
+    "desc": "Red Hat Enterprise Linux (RHEL) and SUSE Linux Enterprise Server (SLES) optimized for ppc64le architecture. Available with Full Linux Subscription (FLS) proxy repository updates and SAP HANA certification.",
+    "value": "High-throughput, memory-bandwidth intensive platform for large SAP HANA scale-up databases, high-performance computing, and Red Hat OpenShift on Power.",
+    "questions": [
+      "Are you running SAP HANA, S/4HANA, or SAP BW/4HANA on Power?",
+      "Do you require Full Linux Subscription (FLS) for automated OS patching in IBM Cloud?",
+      "Are you looking to run containerized workloads on Red Hat OpenShift on Power?"
+    ],
+    "competitors": [
+      "Linux on x86 (AWS EC2, Azure VMs, GCP Compute Engine)"
+    ],
+    "differentiators": [
+      "Up to 8 threads per core (SMT8) and superior memory bandwidth for in-memory databases",
+      "SAP HANA certified hardware profiles up to multi-terabyte RAM scale-up instances",
+      "Integrated repository proxy for seamless OS security updates via FLS"
+    ]
+  },
+  {
+    "id": "os_ocp",
+    "label": "Red Hat OpenShift on Power",
+    "cat": "os",
+    "plays": [1],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-redhat-openshift-power",
+    "desc": "Container application platform running CoreOS worker and master nodes natively on PowerVS LPARs, co-located alongside AIX and IBM i core transaction databases.",
+    "value": "Modernize applications with cloud-native microservices and operators directly adjacent to core legacy databases on the same high-speed internal backplane.",
+    "questions": [
+      "Are you modernizing legacy monolithic applications with containerized microservices?",
+      "Do your container applications require ultra-low latency access to IBM i or AIX Db2 backends?",
+      "Do you want consistent Kubernetes orchestration across hybrid Power and x86 estates?"
+    ],
+    "competitors": [
+      "OpenShift on x86",
+      "Public cloud managed Kubernetes (EKS, GKE, AKS)"
+    ],
+    "differentiators": [
+      "Co-located on the same Power hypervisor and SAN fabric as mission-critical databases",
+      "Enterprise support for ppc64le container images and Red Hat operators",
+      "Automated Terraform deployment templates for multi-node OpenShift clusters"
+    ]
+  },
+  {
+    "id": "storage_tier1",
+    "label": "Tier 1 Storage (High IOPS Tier)",
+    "cat": "storage",
+    "plays": [2],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-on-cloud-architecture#storage-tiers",
+    "desc": "High IOPS performance storage tier on the common enterprise IBM FlashSystem backend (NVMe/SSD). Delivers highest IOPS density (up to ~10 IOPS/GB) for heavy transactional databases, redo logs, and SAP HANA.",
+    "value": "All PowerVS block storage tiers share the same enterprise FlashSystem SAN hardware infrastructure; Tier 1 allocates the highest IOPS throughput profile for demanding database I/O.",
+    "questions": [
+      "What are the IOPS and latency requirements for your core database transaction logs?",
+      "Are you sizing SAP HANA production data and log volumes for maximum IOPS density?",
+      "Do your batch processing windows require maximum storage IOPS throughput?"
+    ],
+    "competitors": [
+      "AWS io2 Block Express",
+      "Azure Ultra Disk Storage"
+    ],
+    "differentiators": [
+      "Runs on identical enterprise IBM FlashSystem NVMe/SSD hardware as Tier 3 with software-governed IOPS profiles",
+      "Highest IOPS per GB allocation for latency-sensitive OLTP workloads",
+      "Support for Global Replication Services (GRS) volume group mirroring and online tier switching"
+    ]
+  },
+  {
+    "id": "storage_tier3",
+    "label": "Tier 3 Storage (Standard IOPS Tier)",
+    "cat": "storage",
+    "plays": [2],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-on-cloud-architecture#storage-tiers",
+    "desc": "Standard IOPS storage tier on the same enterprise IBM FlashSystem backend (NVMe/SSD). Delivers baseline IOPS density (up to ~3 IOPS/GB) for standard application servers, boot disks, and dev/test at a lower price point.",
+    "value": "Provides solid-state enterprise FlashSystem reliability and NVMe speed at a cost-optimized IOPS profile. Allows online, non-disruptive tier changes between Tier 1 and Tier 3 as IOPS demands change.",
+    "questions": [
+      "Are you provisioning secondary data volumes, dev/test environments, or OS boot disks?",
+      "What percentage of your storage capacity requires high Tier 1 IOPS density vs standard Tier 3 IOPS density?"
+    ],
+    "competitors": [
+      "AWS gp3 EBS",
+      "Azure Premium SSD"
+    ],
+    "differentiators": [
+      "Uses the exact same underlying enterprise FlashSystem storage array as Tier 1",
+      "Seamless online, non-disruptive tier migration between Tier 1 and Tier 3 via API/UI",
+      "Cost-optimized for capacity-heavy workloads with moderate IOPS needs"
+    ]
+  },
+  {
+    "id": "storage_shared_volumes",
+    "label": "Shared Storage & Volume Groups",
+    "cat": "storage",
+    "plays": [2],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-managing-storage-volumes",
+    "desc": "Multi-attach block storage volumes and logical volume groups that can be concurrently attached across multiple PowerVS LPARs for clustering and high availability.",
+    "value": "Enables shared-disk clustering architectures such as Oracle RAC and PowerHA SystemMirror without physical SAN cabling complexity.",
+    "questions": [
+      "Are you implementing Oracle Real Application Clusters (RAC) or PowerHA on AIX?",
+      "Do you need to group volumes together for consistent point-in-time snapshots?"
+    ],
+    "competitors": [
+      "AWS Multi-Attach EBS",
+      "Azure Shared Disks"
+    ],
+    "differentiators": [
+      "SCSI-3 Persistent Reservations for enterprise clustering",
+      "Volume group consistency for multi-disk crash-consistent operations"
+    ]
+  },
+  {
+    "id": "storage_vpmem",
+    "label": "Virtual Persistent Memory (vPMEM)",
+    "cat": "storage",
+    "plays": [2],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-attaching-vpmem",
+    "desc": "Non-volatile memory allocations attached directly to PowerVS virtual server instances, preserving data across system restarts at DRAM-like speeds.",
+    "value": "Dramatically accelerates SAP HANA restart times by keeping column store tables loaded in persistent memory, reducing recovery downtime from hours to minutes.",
+    "questions": [
+      "Are you deploying large SAP HANA databases where restart time is critical to SLAs?",
+      "Do you need low-latency in-memory data structures that survive LPAR reboots?"
+    ],
+    "competitors": [
+      "Intel Optane Persistent Memory on x86 bare metal"
+    ],
+    "differentiators": [
+      "Native Power hypervisor vPMEM implementation without hardware DIMM configuration overhead",
+      "SAP HANA certified acceleration for enterprise in-memory databases"
+    ]
+  },
+  {
+    "id": "storage_cos",
+    "label": "Cloud Object Storage (COS)",
+    "cat": "storage",
+    "plays": [2],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/cloud-object-storage",
+    "desc": "Highly scalable, durable, and cost-effective S3-compatible cloud object storage. Serves as the central repository for PowerVS custom images, backups, and archives.",
+    "value": "Provides indestructible, encrypted, multi-tier storage with zero ingress/egress fees within the IBM Cloud regional backbone.",
+    "questions": [
+      "Where are you storing OS golden images, mksysb backups, and database archive logs?",
+      "Do you need immutable storage with write-once-read-many (WORM) retention policies?",
+      "Are you connecting IBM i ICC or FalconStor VTL directly to object storage?"
+    ],
+    "competitors": [
+      "Amazon S3",
+      "Azure Blob Storage",
+      "Google Cloud Storage"
+    ],
+    "differentiators": [
+      "Information Dispersal Algorithm (IDA) guarantees 99.999999999% (11 9s) durability",
+      "Direct private interconnect from PowerVS via PER, Transit Gateway, and VPE endpoints",
+      "Immutable Object Lock compliance policies for ransomware protection"
+    ]
+  },
+  {
+    "id": "backup_compass",
+    "label": "Compass BaaS (Cobalt Iron)",
+    "cat": "backups",
+    "plays": [3],
+    "hub": false,
+    "status": "partner",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-backup-strategies#baas",
+    "desc": "Enterprise Backup-as-a-Service (BaaS) automated backup solution for PowerVS AIX and IBM i workloads, powered by Cobalt Iron SaaS and IBM Storage Protect technology.",
+    "value": "Eliminates backup infrastructure management with policy-driven, automated protection, centralized monitoring, and automated cloud repository tiering.",
+    "questions": [
+      "Do you want fully managed, automated Backup-as-a-Service for your PowerVS workloads?",
+      "Are you looking to eliminate on-prem tape and manual backup operations?",
+      "Do you need a single pane of glass for multi-tenant enterprise backup governance?"
+    ],
+    "competitors": [
+      "Manual tape operations",
+      "Self-managed backup servers",
+      "Commvault / Rubrik on x86"
+    ],
+    "differentiators": [
+      "Pre-integrated IBM Cloud catalog deployment template with backup VPC and VPE wiring",
+      "Deep integration with AIX and IBM i OS backup agents and Db2 databases",
+      "Air-gapped cyber resilience and automated ransomware threat analytics"
+    ]
+  },
+  {
+    "id": "backup_falconstor",
+    "label": "FalconStor StorSafe VTL",
+    "cat": "backups",
+    "plays": [3],
+    "hub": false,
+    "status": "partner",
+    "docsUrl": "https://www.falconstor.com/partners/ibm-partnership/powervs-resident-backup/",
+    "desc": "Virtual Tape Library (VTL) software appliance running on PowerVS or VPC, presenting standard iSCSI tape drives to IBM i, AIX, and Linux with industry-leading deduplication to COS.",
+    "value": "Allows existing tape-based backup scripts (BRMS, tar, mksysb, Veeam) to continue operating unchanged while drastically cutting cloud storage costs via 20:1+ deduplication.",
+    "questions": [
+      "Does your IBM i / AIX operational team rely on native tape commands (SAVLIB, SAVOBJ, mksysb)?",
+      "Are high cloud storage transfer and storage costs a concern for backup data?",
+      "Do you need cross-region or hybrid on-prem-to-cloud tape replication?"
+    ],
+    "competitors": [
+      "Physical tape libraries (LTO)",
+      "Dell EMC Data Domain",
+      "AWS Storage Gateway Tape"
+    ],
+    "differentiators": [
+      "Patented block-level deduplication engine reduces storage footprint up to 95%",
+      "Native iSCSI VTL emulation requiring zero changes to legacy IBM i and AIX scripts",
+      "Available as an IBM Cloud catalog deployable tile on Power and VPC"
+    ]
+  },
+  {
+    "id": "backup_brms_icc",
+    "label": "BRMS & Cloud Storage (5733-ICC)",
+    "cat": "backups",
+    "plays": [3],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-backup-brms-icc",
+    "desc": "Native IBM i Backup, Recovery and Media Services (BRMS 5770-BR1) integrated with IBM Cloud Storage Solutions for i (5733-ICC) to stream backups directly to Cloud Object Storage.",
+    "value": "Standard, vendor-free native IBM i backup automation that writes save files and media volumes directly to scalable cloud object storage over private VPE.",
+    "questions": [
+      "Is BRMS already your enterprise standard for IBM i media and backup management?",
+      "Do you want to write backups directly to IBM Cloud Object Storage without third-party backup servers?",
+      "Do you need automated retention, media tracking, and object-level restore?"
+    ],
+    "competitors": [
+      "Physical tape offsite shipping (Iron Mountain)",
+      "Third-party backup appliances"
+    ],
+    "differentiators": [
+      "Official IBM-developed and supported product for IBM i backup lifecycle",
+      "Direct REST S3 communication from IBM i to COS over private network paths",
+      "Seamless integration with IBM i control language (CL) commands and scheduling"
+    ]
+  },
+  {
+    "id": "backup_storage_protect",
+    "label": "AIX mksysb & IBM Storage Protect",
+    "cat": "backups",
+    "plays": [3],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-aix-backups",
+    "desc": "System-level mksysb / savevg image backups combined with IBM Storage Protect (formerly Tivoli Storage Manager / TSM) client for enterprise file and database backups to COS.",
+    "value": "Comprehensive operating system bare-metal recovery and granular file/database level backup for mission-critical AIX workloads.",
+    "questions": [
+      "How do you capture root volume group (rootvg) system state for disaster recovery?",
+      "Do you use IBM Storage Protect (TSM) or Spectrum Protect across your enterprise?",
+      "Do you need automated bare-metal recovery images staged in Cloud Object Storage?"
+    ],
+    "competitors": [
+      "Veritas NetBackup",
+      "Commvault Complete Backup"
+    ],
+    "differentiators": [
+      "Gold standard for AIX operating system recovery and NIM server provisioning",
+      "Direct cloud storage device class support in IBM Storage Protect",
+      "Support for live database online backup APIs (Oracle RMAN, Db2 backup)"
+    ]
+  },
+  {
+    "id": "backup_snapshots",
+    "label": "PowerVS Snapshots & Volume Clones",
+    "cat": "backups",
+    "plays": [3],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-snapshot-clone",
+    "desc": "SAN-level point-in-time volume snapshots and asynchronous volume cloning directly orchestrated via PowerVS APIs and storage controllers.",
+    "value": "Near-instantaneous crash-consistent volume backups and rapid environment cloning for test, development, and reporting without impacting production performance.",
+    "questions": [
+      "Do you need zero-impact point-in-time snapshots of large database volumes before maintenance?",
+      "Do you regularly spin up sandbox or QA environments by cloning production data?",
+      "Do you need API-driven snapshot automation via Terraform or Ansible?"
+    ],
+    "competitors": [
+      "AWS EBS Snapshots",
+      "Azure Managed Disk Snapshots"
+    ],
+    "differentiators": [
+      "Hardware FlashCopy integration directly inside the PowerVS storage subsystem",
+      "Full API and CLI support for automated lifecycle scheduling",
+      "Ability to restore volume state in place or clone into independent volumes"
+    ]
+  },
+  {
+    "id": "backup_veeam",
+    "label": "Veeam Agent for AIX",
+    "cat": "backups",
+    "plays": [3],
+    "hub": false,
+    "status": "partner",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-backup-strategies#veeam-aix",
+    "desc": "Enterprise agent-based backup solution for AIX environments, providing file-level and volume-level backup directly to Veeam backup repositories.",
+    "value": "Enables customers standardizing on Veeam across hybrid cloud and x86 to incorporate AIX workloads into a single data management platform.",
+    "questions": [
+      "Is Veeam Backup & Replication your enterprise-wide backup management platform?",
+      "Do you want a unified backup dashboard across both x86 VPC instances and PowerVS AIX?"
+    ],
+    "competitors": [
+      "Commvault",
+      "Cohesity",
+      "Rubrik"
+    ],
+    "differentiators": [
+      "Native Veeam Agent for AIX integration with Veeam Backup & Replication console",
+      "Unified policy management across mixed x86 and Power environments"
+    ]
+  },
+  {
+    "id": "repl_grs",
+    "label": "Global Replication Services (GRS)",
+    "cat": "replication",
+    "plays": [4],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-global-replication-services",
+    "desc": "Storage-subsystem-level asynchronous remote volume replication between paired PowerVS data centers (e.g., Dallas to Washington, Frankfurt to London).",
+    "value": "Provides turnkey, hardware-level disaster recovery with minimal RPO/RTO without consuming CPU cycles or requiring host-based replication agents on the LPAR.",
+    "questions": [
+      "What are your cross-region Disaster Recovery (DR) RPO and RTO requirements?",
+      "Do you want storage-level replication that operates independently of the guest operating system?",
+      "Do you have multi-volume databases that require storage consistency groups during failover?"
+    ],
+    "competitors": [
+      "Storage array replication (SRDF, TrueCopy)",
+      "Host-based software replication"
+    ],
+    "differentiators": [
+      "Built-in SAN replication managed via PowerVS console, API, and CLI",
+      "Zero host CPU overhead or guest OS driver requirements",
+      "Volume group consistency across multi-volume application and database sets"
+    ]
+  },
+  {
+    "id": "repl_powerha_aix",
+    "label": "PowerHA SystemMirror for AIX",
+    "cat": "replication",
+    "plays": [4],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ha-dr-mechanisms#powerha-aix",
+    "desc": "High availability and disaster recovery clustering software for AIX. Automates workload failover across LPARs or sites using heartbeat networks and shared storage.",
+    "value": "Maximizes application uptime for mission-critical enterprise workloads like SAP, Oracle, and Db2 by detecting component failures and initiating sub-minute automated failover.",
+    "questions": [
+      "Do you have near-zero RTO requirements for AIX mission-critical applications?",
+      "Are you running clustered databases (Oracle, Db2, SAP) requiring automated health monitoring and IP takeover?",
+      "Are you currently using PowerHA SystemMirror on-premises?"
+    ],
+    "competitors": [
+      "Veritas InfoScale / VCS",
+      "Red Hat High Availability Cluster"
+    ],
+    "differentiators": [
+      "Deepest integration with AIX kernel, RSCT, and Power hardware architecture",
+      "Smart Assist modules for SAP, Oracle, Db2, and WebSphere for automated failover configuration",
+      "Standard Edition included in IBM Cloud licensing catalog options"
+    ]
+  },
+  {
+    "id": "repl_powerha_ibmi",
+    "label": "PowerHA for i & Geographic Mirroring",
+    "cat": "replication",
+    "plays": [4],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ha-dr-mechanisms#powerha-ibmi",
+    "desc": "High availability and data replication solution for IBM i utilizing Independent Auxiliary Storage Pools (IASP) and Geographic Mirroring (synchronous or asynchronous).",
+    "value": "Replicates entire database libraries and IFS directories at the page level to a target system without database journaling overhead or record-level locks.",
+    "questions": [
+      "Are your IBM i applications architected with Independent ASPs (IASPs)?",
+      "Do you require cross-data center high availability for IBM i with automated cluster failover?",
+      "Do you want to eliminate logical replication record locks and latency?"
+    ],
+    "competitors": [
+      "Precisely MIMIX",
+      "Maxava HA",
+      "HelpSystems Robot HA"
+    ],
+    "differentiators": [
+      "Native IBM-engineered storage and OS clustering for IBM i",
+      "Page-level Geographic Mirroring operates underneath the Db2 database engine",
+      "Zero application journaling overhead or database trigger management"
+    ]
+  },
+  {
+    "id": "repl_db2_qrep",
+    "label": "Db2 Q-Replication / Mirroring",
+    "cat": "replication",
+    "plays": [4],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ha-dr-mechanisms#db2-replication",
+    "desc": "High-speed, low-latency logical data replication technology for IBM Db2 databases utilizing WebSphere MQ / IBM MQ message queues to distribute transaction changes.",
+    "value": "Enables active-active data distribution, continuous availability, and real-time data feeding to analytics platforms with minimal latency.",
+    "questions": [
+      "Are you running enterprise Db2 databases that require active-active cross-site replication?",
+      "Do you need to replicate specific schemas or tables rather than full disk volumes?",
+      "Are you feeding real-time Power database transactions to cloud data warehouses?"
+    ],
+    "competitors": [
+      "Oracle GoldenGate",
+      "Qlik Replicate (Attunity)",
+      "Striim"
+    ],
+    "differentiators": [
+      "Optimized specifically for Db2 database transaction logs on Power",
+      "Supports selective table filtering, transformation, and conflict detection",
+      "Scales across high-volume OLTP transaction workloads"
+    ]
+  },
+  {
+    "id": "repl_logical_isv",
+    "label": "ISV Logical Replication (MIMIX / Maxava)",
+    "cat": "replication",
+    "plays": [4],
+    "hub": false,
+    "status": "partner",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ha-dr-mechanisms#logical-rep",
+    "desc": "Third-party journal-based logical replication software (Precisely MIMIX, Maxava HA, Quick-EDD) replicating IBM i database journals and IFS objects between systems in real-time.",
+    "value": "Provides real-time continuous replication between heterogeneous hardware, different OS versions, or hybrid on-premises to PowerVS targets with active-read capability on secondary nodes.",
+    "questions": [
+      "Is MIMIX or Maxava already licensed and deployed in your on-premises IBM i estate?",
+      "Do you need real-time replication between different IBM i OS versions or hardware tiers?",
+      "Do you require the target LPAR to remain active for read-only reporting or queries?"
+    ],
+    "competitors": [
+      "IBM PowerHA Geographic Mirroring",
+      "Hardware SAN replication"
+    ],
+    "differentiators": [
+      "Works across dissimilar storage, hardware generations, and OS releases",
+      "Target database is fully open and accessible for real-time reporting and queries",
+      "Proven enterprise standard across thousands of IBM i production environments"
+    ]
+  },
+  {
+    "id": "mig_falconstor",
+    "label": "FalconStor Migration",
+    "cat": "migration",
+    "plays": [5],
+    "hub": false,
+    "status": "partner",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-falconstor-vtl",
+    "desc": "Minimal-downtime migration methodology leveraging FalconStor StorSafe VTL replication from on-premises Power systems directly into PowerVS instances.",
+    "value": "Dramatically compresses migration cutover windows by continuously seeding and deduplicating tape backup volumes to IBM Cloud prior to final cutover.",
+    "questions": [
+      "What is your maximum allowable downtime window for cutover to PowerVS?",
+      "How many terabytes of IBM i or AIX data need to be migrated over the network?",
+      "Do you want to pre-seed 99% of data prior to the final weekend cutover?"
+    ],
+    "competitors": [
+      "Physical tape shipping and manual restore",
+      "Full offline cold backup cutovers"
+    ],
+    "differentiators": [
+      "WAN-optimized replication with 95%+ deduplication eliminates bandwidth bottlenecks",
+      "Replicates standard VTL save files without installing invasive kernel drivers on source LPARs",
+      "Enables rapid test mock cutovers without disrupting ongoing on-premises production"
+    ]
+  },
+  {
+    "id": "mig_brms_cos",
+    "label": "BRMS / ICC Migration to Cloud",
+    "cat": "migration",
+    "plays": [5],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ibmi-migration-brms-icc",
+    "desc": "Workload migration path for IBM i utilizing BRMS and Cloud Storage Solutions for i (5733-ICC) to save on-prem libraries to COS and restore onto a PowerVS instance.",
+    "value": "Standard, scriptable, no-software-license-cost migration path for IBM i environments moving to IBM Cloud.",
+    "questions": [
+      "Are you planning an IBM i migration using existing BRMS skills and processes?",
+      "Can your migration cutover accommodate a standard save-to-cloud and restore maintenance window?",
+      "Do you have private Direct Link or VPN network bandwidth connected to IBM Cloud?"
+    ],
+    "competitors": [
+      "Physical tape courier",
+      "Third-party replication software"
+    ],
+    "differentiators": [
+      "Uses native IBM i BRMS and ICC utilities without extra third-party software procurement",
+      "Transfers data directly into encrypted IBM Cloud Object Storage buckets",
+      "Complete object-level fidelity for libraries, IFS objects, user profiles, and system configurations"
+    ]
+  },
+  {
+    "id": "mig_mksysb_nim",
+    "label": "AIX mksysb & NIM Migration",
+    "cat": "migration",
+    "plays": [5],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-migrating-mksysb",
+    "desc": "Standard AIX system migration using mksysb rootvg backup images and Network Installation Management (NIM) servers to provision identical AIX instances in PowerVS.",
+    "value": "Exact 1:1 replica migration of OS configurations, filesystems, customized middleware, and user accounts from on-prem AIX to PowerVS.",
+    "questions": [
+      "Do you have complex AIX rootvg customizations and configurations to preserve?",
+      "Will you stage mksysb images in IBM Cloud Object Storage or deploy a cloud NIM master?",
+      "Are non-rootvg data volume groups being migrated via savevg/restvg or SAN replication?"
+    ],
+    "competitors": [
+      "Manual OS rebuild and application reinstall",
+      "x86 OS porting"
+    ],
+    "differentiators": [
+      "Guaranteed operational fidelity for custom AIX kernel parameters and installed software",
+      "Fast cloud image onboarding directly from mksysb image files staged in COS",
+      "Supported by IBM Power engineering with documented step-by-step procedures"
+    ]
+  },
+  {
+    "id": "mig_powervc_ova",
+    "label": "PowerVC Image Export (OVA)",
+    "cat": "migration",
+    "plays": [5],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-deploy-custom-image",
+    "desc": "Open Virtual Appliance (OVA) image capture and export from on-premises IBM PowerVC or VIOS, uploaded to COS and imported directly as PowerVS boot images.",
+    "value": "Enables seamless VM mobility and template standardization across private Power enterprise clouds and IBM Cloud PowerVS.",
+    "questions": [
+      "Are you currently managing on-premises Power virtualization with IBM PowerVC?",
+      "Do you maintain standardized golden VM images and cloud-init templates for AIX, IBM i, or Linux?",
+      "Do you want to deploy identical VM images across hybrid on-prem and public cloud environments?"
+    ],
+    "competitors": [
+      "VMware vCenter OVF export",
+      "Manual system rebuilds"
+    ],
+    "differentiators": [
+      "Native OpenStack/PowerVC image format compatibility with PowerVS image catalog",
+      "Preserves VM disk metadata, volume attachments, and cloud-init initialization routines",
+      "Direct API-driven import from IBM Cloud Object Storage buckets"
+    ]
+  },
+  {
+    "id": "mig_lab_services",
+    "label": "IBM Lab Services & Migration Factory",
+    "cat": "migration",
+    "plays": [5],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-planning#lab-services",
+    "desc": "Specialized IBM Power Systems consulting team providing architecture design, workload discovery, migration execution, and cutover assistance.",
+    "value": "De-risks complex enterprise migrations with deep Power systems expertise, proven tooling, and 24/7 cutover war-room support.",
+    "questions": [
+      "Do you require expert hands-on assistance for enterprise database and ERP cutover?",
+      "Are you migrating complex legacy environments with tight SLA requirements?",
+      "Would a pre-migration performance assessment and sizing study reduce migration risk?"
+    ],
+    "competitors": [
+      "Third-party generic cloud migration consultancies",
+      "Internal DIY migration teams"
+    ],
+    "differentiators": [
+      "Direct access to IBM Power and OS kernel development teams",
+      "Proprietary tooling for performance sizing (LPAR perf data, Workload Estimator)",
+      "Thousands of successful enterprise AIX and IBM i cloud migrations delivered"
+    ]
+  },
+  {
+    "id": "mig_aspera",
+    "label": "IBM Aspera High-Speed Transfer",
+    "cat": "migration",
+    "plays": [5],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-planning#aspera",
+    "desc": "Patented FASP protocol high-speed data transfer technology integrated into IBM Cloud Object Storage for rapid bulk data movement over long-distance WAN links.",
+    "value": "Transfers multi-terabyte database dumps, disk images, and archives up to 100x faster than standard FTP/HTTP without packet-loss degradation.",
+    "questions": [
+      "Do you need to transfer tens or hundreds of terabytes over WAN connections with high latency?",
+      "Is network transfer time the primary bottleneck in your migration planning schedule?"
+    ],
+    "competitors": [
+      "AWS DataSync / Snowball",
+      "Standard rsync / SFTP",
+      "Azure Data Box"
+    ],
+    "differentiators": [
+      "Patented FASP protocol fully utilizes available bandwidth regardless of network latency",
+      "Direct streaming ingestion into IBM Cloud Object Storage buckets",
+      "Built-in enterprise-grade AES-256 in-transit and at-rest encryption"
+    ]
+  },
+  {
+    "id": "cloud_transit_gateway",
+    "label": "IBM Cloud Transit Gateway",
+    "cat": "cloud_services",
+    "plays": [6],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/transit-gateway",
+    "desc": "High-speed private cloud backbone router connecting PowerVS Power Edge Router (PER) workspaces with VPCs, Classic infrastructure, and Direct Link connections.",
+    "value": "Enables seamless private interconnectivity between Power workloads and x86 cloud services, on-prem data centers, and multi-cloud environments.",
+    "questions": [
+      "Do your PowerVS instances need to connect privately to IBM Cloud VPC applications or VPEs?",
+      "Are you interconnecting multiple PowerVS workspaces across different regions?",
+      "Are you connecting on-premises data centers via Direct Link 2.0?"
+    ],
+    "competitors": [
+      "AWS Transit Gateway",
+      "Azure Virtual WAN"
+    ],
+    "differentiators": [
+      "Direct native attachment point for PowerVS PER workspaces",
+      "Multi-zone and cross-region global interconnectivity on IBM private backbone",
+      "Low latency, high-bandwidth software-defined routing fabric"
+    ]
+  },
+  {
+    "id": "cloud_vpc",
+    "label": "IBM Cloud VPC",
+    "cat": "cloud_services",
+    "plays": [6],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/vpc",
+    "desc": "Software-defined Virtual Private Cloud network hosting front-end x86 application tiers, container clusters (ROKS/IKS), and auxiliary services adjacent to PowerVS.",
+    "value": "Provides a secure, isolated cloud network for modern web, API, and microservice applications that transact with Power backends.",
+    "questions": [
+      "Are you modernizing web front-ends, API gateways, or microservices on x86 in VPC?",
+      "Do you need jump hosts, bastion servers, or VPN gateways for PowerVS administrative access?"
+    ],
+    "competitors": [
+      "AWS VPC",
+      "Azure VNet",
+      "GCP VPC"
+    ],
+    "differentiators": [
+      "Low-latency private adjacency to PowerVS workspaces via Transit Gateway",
+      "Native Virtual Private Endpoints (VPE) for secure IBM Cloud service consumption",
+      "Enterprise security groups, network ACLs, and routing table policies"
+    ]
+  },
+  {
+    "id": "cloud_key_protect",
+    "label": "IBM Key Protect",
+    "cat": "cloud_services",
+    "plays": [6],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/key-protect",
+    "desc": "Cloud-based Key Management Service (KMS) providing Envelope Encryption and FIPS 140-2 Level 3 hardware security module (HSM) protection for storage keys.",
+    "value": "Gives enterprise full control over encryption keys (Bring Your Own Key / BYOK) used to encrypt Cloud Object Storage buckets and AIX/Linux storage volumes.",
+    "questions": [
+      "Do enterprise compliance regulations mandate customer-controlled encryption keys (BYOK)?",
+      "Do you need centralized key lifecycle management, rotation, and audit tracking across IBM Cloud?"
+    ],
+    "competitors": [
+      "AWS KMS",
+      "Azure Key Vault",
+      "HashiCorp Vault"
+    ],
+    "differentiators": [
+      "Hardware security module (HSM) backed encryption with FIPS 140-2 Level 3 certification",
+      "Native integration with IBM Cloud Object Storage and VPC storage layers",
+      "Successor platform for KMIP and enterprise cloud key protection"
+    ]
+  },
+  {
+    "id": "cloud_logs_monitoring",
+    "label": "IBM Cloud Logs & Monitoring",
+    "cat": "cloud_services",
+    "plays": [6],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/ibm-cloud-logs",
+    "desc": "Enterprise observability suite ingesting platform telemetry, CPU/memory performance metrics, and audit logs from PowerVS workspaces and operating system agents.",
+    "value": "Provides unified visibility, proactive threshold alerting, and audit compliance across hybrid Power and cloud infrastructure.",
+    "questions": [
+      "Do you require centralized audit logging for all PowerVS workspace lifecycle events and API calls?",
+      "Do you need real-time performance dashboards and threshold alerts for CPU, RAM, and disk I/O?",
+      "Are you tracking regulatory compliance logs for security posture management (CSPM)?"
+    ],
+    "competitors": [
+      "Datadog",
+      "Dynatrace",
+      "Splunk"
+    ],
+    "differentiators": [
+      "Built-in platform event routing directly from PowerVS hypervisors into IBM Cloud Logs",
+      "Cost-optimized log routing with cold-storage COS tiering for long-term retention",
+      "Integrated metrics dictionary for PowerVS virtual instances and placement groups"
+    ]
+  },
+  {
+    "id": "cloud_vpc_vpn",
+    "label": "VPC VPN Gateways (Site-to-Site & Client)",
+    "cat": "cloud_services",
+    "plays": [6],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-create-server",
+    "desc": "Software-defined IPSec Site-to-Site VPN and OpenVPN Client-to-Site VPN servers hosted on VPC, routing administrative and user traffic to PowerVS via Transit Gateway.",
+    "value": "Official replacement for legacy PowerVS VPNaaS, enabling secure encrypted connectivity for remote administrators (ACS 5250, SSH) and branch offices.",
+    "questions": [
+      "How do remote administrators access IBM i ACS 5250 consoles or AIX SSH terminals?",
+      "Do you need redundant IPSec VPN tunnels between on-premises data centers and PowerVS?",
+      "Are you migrating off deprecated PowerVS VPNaaS to VPC VPN?"
+    ],
+    "competitors": [
+      "AWS Client VPN / Site-to-Site VPN",
+      "Azure VPN Gateway"
+    ],
+    "differentiators": [
+      "Fully managed high availability gateway service with auto-scaling",
+      "Official recommended architectural pattern for PowerVS remote administrative access",
+      "Seamless integration with IBM Cloud IAM authentication and MFA"
+    ]
+  }
+]

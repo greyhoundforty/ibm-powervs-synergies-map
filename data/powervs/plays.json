@@ -1,0 +1,106 @@
+{
+  "view": {
+    "id": "powervs",
+    "label": "IBM Power Virtual Server",
+    "short": "PowerVS",
+    "mode": "mapped",
+    "blurb": "Power Virtual Server core architectures, OS platforms, storage tiers, enterprise backup, disaster recovery replication, and migration pathways."
+  },
+  "plays": {
+    "0": {
+      "id": 0,
+      "name": "Power Virtual Server",
+      "short": "PowerVS Core",
+      "cat": "powervs",
+      "varName": "--play-0"
+    },
+    "1": {
+      "id": 1,
+      "name": "Operating Systems",
+      "short": "OS",
+      "cat": "os",
+      "varName": "--play-1"
+    },
+    "2": {
+      "id": 2,
+      "name": "Storage",
+      "short": "Storage",
+      "cat": "storage",
+      "varName": "--play-2"
+    },
+    "3": {
+      "id": 3,
+      "name": "Backups",
+      "short": "Backups",
+      "cat": "backups",
+      "varName": "--play-3"
+    },
+    "4": {
+      "id": 4,
+      "name": "Replication",
+      "short": "Replication",
+      "cat": "replication",
+      "varName": "--play-4"
+    },
+    "5": {
+      "id": 5,
+      "name": "Migration",
+      "short": "Migration",
+      "cat": "migration",
+      "varName": "--play-5"
+    },
+    "6": {
+      "id": 6,
+      "name": "IBM Cloud Integrations",
+      "short": "Cloud Services",
+      "cat": "cloud_services",
+      "varName": "--play-6"
+    }
+  },
+  "playOrder": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "categories": [
+    {
+      "id": "powervs",
+      "label": "Power Virtual Server Core",
+      "playId": 0
+    },
+    {
+      "id": "os",
+      "label": "Operating Systems",
+      "playId": 1
+    },
+    {
+      "id": "storage",
+      "label": "Storage",
+      "playId": 2
+    },
+    {
+      "id": "backups",
+      "label": "Backups",
+      "playId": 3
+    },
+    {
+      "id": "replication",
+      "label": "Replication",
+      "playId": 4
+    },
+    {
+      "id": "migration",
+      "label": "Migration",
+      "playId": 5
+    },
+    {
+      "id": "cloud_services",
+      "label": "IBM Cloud Integrations",
+      "playId": 6
+    }
+  ]
+}

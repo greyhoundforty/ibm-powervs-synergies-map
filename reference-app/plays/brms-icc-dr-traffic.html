@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BRMS + ICC network overview · backup and cloud restore</title>
+  <style>
+    :root {
+      --bg: #161616;
+      --layer: #262626;
+      --layer-02: #393939;
+      --border: #525252;
+      --text: #f4f4f4;
+      --muted: #c6c6c6;
+      --helper: #8d8d8d;
+      --blue: #4589ff;
+      --teal: #3ddbd9;
+      --magenta: #ff7eb6;
+      --orange: #ffb784;
+      --green: #42be65;
+      --red: #fa4d56;
+      --on-color: #161616;
+    }
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --layer: #f4f4f4;
+      --layer-02: #e0e0e0;
+      --border: #8d8d8d;
+      --text: #161616;
+      --muted: #525252;
+      --helper: #6f6f6f;
+      --blue: #0043ce;
+      --teal: #007d79;
+      --magenta: #d12771;
+      --orange: #8a3800;
+      --green: #198038;
+      --red: #da1e28;
+      --on-color: #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Helvetica Neue", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 16px 24px 12px;
+      border-bottom: 1px solid var(--layer-02);
+    }
+    .kicker { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--helper); }
+    h1 { font-size: 22px; font-weight: 600; margin: 4px 0 8px; }
+    .lede { font-size: 14px; color: var(--muted); max-width: 980px; line-height: 1.45; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 24px;
+      border-bottom: 1px solid var(--layer-02);
+    }
+    .toolbar span { font-size: 12px; color: var(--helper); margin-right: 4px; }
+    button {
+      font: inherit;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    button.is-on { background: var(--blue); color: var(--on-color); border-color: var(--blue); }
+    button[data-flow="backup"].is-on { background: var(--teal); border-color: var(--teal); color: var(--on-color); }
+    button[data-flow="restore-pull"].is-on,
+    button[data-flow="restore"].is-on { background: var(--blue); }
+    button[data-flow="restore-nfs"].is-on { background: var(--magenta); border-color: var(--magenta); color: var(--on-color); }
+    button[data-flow="restore-remain"].is-on { background: var(--orange); border-color: var(--orange); color: var(--on-color); }
+    .main { flex: 1; display: grid; grid-template-columns: 1fr 340px; min-height: 0; }
+    .diagram {
+      padding: 16px 16px 8px;
+      overflow: auto;
+    }
+    svg { width: 100%; height: auto; display: block; min-width: 1080px; }
+    .notes {
+      border-left: 1px solid var(--layer-02);
+      padding: 16px 18px 24px;
+      overflow: auto;
+      background: var(--layer);
+    }
+    .notes h2 { font-size: 14px; margin-bottom: 8px; }
+    .notes ol, .notes ul { padding-left: 18px; font-size: 13px; line-height: 1.5; color: var(--muted); }
+    .notes li { margin: 6px 0; }
+    .notes p { font-size: 13px; line-height: 1.5; color: var(--muted); margin-bottom: 10px; }
+    .notes code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 14px 18px;
+      padding: 8px 24px 14px;
+      font-size: 12px; color: var(--muted);
+      border-top: 1px solid var(--layer-02);
+    }
+    .swatch { display: inline-block; width: 22px; height: 3px; margin-right: 6px; vertical-align: middle; }
+    .swatch.dash { border-top: 2px dashed var(--helper); height: 0; width: 22px; }
+    .badge { font-size: 10px; letter-spacing: 0.06em; }
+    a { color: var(--blue); }
+    .zone { fill: var(--layer); stroke: var(--layer-02); }
+    .node { fill: var(--bg); stroke: var(--border); }
+    .node-title { fill: var(--text); font-size: 13px; font-weight: 600; font-family: inherit; }
+    .node-sub { fill: var(--helper); font-size: 11px; font-family: inherit; }
+    .zone-title { fill: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; font-family: inherit; }
+    .zone-flag { font-size: 10px; letter-spacing: 0.08em; font-family: inherit; }
+    .exposed { fill: var(--orange); }
+    .hidden { fill: var(--helper); }
+    .allow { fill: var(--green); }
+    .deny { fill: var(--red); }
+    .flow { fill: none; stroke-width: 2.5; marker-end: url(#arrow); }
+    .flow.backup { stroke: var(--teal); }
+    .flow.restore-pull { stroke: var(--blue); }
+    .flow.restore-nfs { stroke: var(--magenta); }
+    .flow.restore-remain { stroke: var(--orange); }
+    .flow.deny { stroke: var(--red); stroke-dasharray: 5 4; marker-end: url(#arrow-deny); }
+    .ctrl { fill: none; stroke: var(--helper); stroke-width: 1.5; stroke-dasharray: 4 4; marker-end: url(#arrow-ctrl); }
+    .lbl {
+      font-size: 11px;
+      font-weight: 600;
+      font-family: inherit;
+      paint-order: stroke fill;
+      stroke: var(--layer);
+      stroke-width: 5px;
+      stroke-linejoin: round;
+    }
+    .dim [data-group] .flow,
+    .dim [data-group] .lbl { opacity: 0.12; }
+    .dim [data-group].show .flow,
+    .dim [data-group].show .lbl { opacity: 1; }
+    body.hide-ctrl .ctrl,
+    body.hide-ctrl .ctrl-lbl { display: none; }
+    footer { padding: 8px 24px 12px; font-size: 12px; color: var(--helper); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="kicker">IBM Cloud · PowerVS offshoot</div>
+    <h1>BRMS + ICC backup and cloud restore</h1>
+    <p class="lede">On-prem IBM i saves with BRMS and Cloud Storage Solutions for i (5733-ICC), then ICC copies virtual volumes into Cloud Object Storage through a VPC VPN and a COS VPE. A PowerVS IBM i NFS LPAR is only on the restore path: it stages the QCLDBIPL boot images so a new LPAR can network-install, then remaining data comes back from COS.</p>
+  </header>
+
+  <div class="toolbar">
+    <span>Highlight</span>
+    <button type="button" data-flow="all" class="is-on">All flows</button>
+    <button type="button" data-flow="backup">1 · On-prem backup</button>
+    <button type="button" data-flow="restore">2 · Cloud restore</button>
+    <button type="button" data-flow="restore-pull">2a · Pull IPL media</button>
+    <button type="button" data-flow="restore-nfs">2b · NFS network install</button>
+    <button type="button" data-flow="restore-remain">2c · Remaining COS restore</button>
+    <button type="button" id="ctrl-btn" class="is-on">Control plane</button>
+    <button type="button" id="theme-btn">Theme</button>
+    <a href="./brms-icc-dr.html">Open as map play</a>
+    <a href="./brms-icc-onprem-restore.html">On-prem restore</a>
+    <a href="../docs/brms-icc/backup-onprem-to-cos.md">Backup guide</a>
+  </div>
+
+  <div class="main">
+    <section class="diagram" aria-label="Network overview">
+      <svg viewBox="0 0 1280 620" role="img">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/>
+          </marker>
+          <marker id="arrow-deny" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#fa4d56"/>
+          </marker>
+          <marker id="arrow-ctrl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#8d8d8d"/>
+          </marker>
+        </defs>
+
+        <rect class="zone" x="16" y="36" width="250" height="548" rx="4"/>
+        <text class="zone-title" x="32" y="58">ON-PREM</text>
+        <text class="zone-flag hidden" x="176" y="58">NOT EXPOSED</text>
+
+        <rect class="zone" x="282" y="36" width="150" height="548" rx="4"/>
+        <text class="zone-title" x="298" y="58">INTERNET</text>
+        <text class="zone-flag exposed" x="298" y="74">IKE / NAT-T ONLY</text>
+
+        <rect class="zone" x="448" y="36" width="360" height="548" rx="4"/>
+        <text class="zone-title" x="464" y="58">IBM CLOUD VPC</text>
+        <text class="zone-flag hidden" x="700" y="58">NOT EXPOSED*</text>
+
+        <rect class="zone" x="824" y="36" width="170" height="548" rx="4"/>
+        <text class="zone-title" x="840" y="58">OBJECT STORE</text>
+        <text class="zone-flag hidden" x="840" y="74">NOT EXPOSED</text>
+
+        <rect class="zone" x="1010" y="36" width="254" height="548" rx="4"/>
+        <text class="zone-title" x="1026" y="58">POWERVS DR SITE</text>
+        <text class="zone-flag hidden" x="1026" y="74">NOT EXPOSED</text>
+
+        <rect class="node" x="36" y="120" width="210" height="76" rx="3"/>
+        <text class="node-title" x="50" y="146">IBM i LPAR</text>
+        <text class="node-sub" x="50" y="166">BRMS 5770-BR1 + ICC 5733-ICC</text>
+        <text class="node-sub" x="50" y="184">QCLDBSYS01 then QCLDBIPL01</text>
+
+        <rect class="node" x="36" y="230" width="210" height="64" rx="3"/>
+        <text class="node-title" x="50" y="256">On-prem VPN</text>
+        <text class="node-sub" x="50" y="276">Customer IPsec peer</text>
+
+        <rect class="node" x="298" y="168" width="118" height="76" rx="3" stroke="#ffb784"/>
+        <text class="node-title" x="312" y="196">IPsec</text>
+        <text class="node-sub" x="312" y="214">UDP 500 / 4500</text>
+        <text class="node-sub" x="312" y="230">ESP · EXPOSED</text>
+
+        <rect class="node" x="298" y="430" width="118" height="64" rx="3" stroke="#fa4d56"/>
+        <text class="node-title" x="312" y="456">Public COS</text>
+        <text class="node-sub" x="312" y="476">Do not use</text>
+
+        <rect class="node" x="468" y="120" width="150" height="76" rx="3" stroke="#ffb784"/>
+        <text class="node-title" x="482" y="146">VPC VPN GW</text>
+        <text class="node-sub" x="482" y="166">Site-to-site</text>
+        <text class="node-sub" x="482" y="184">Public IKE IPs*</text>
+
+        <rect class="node" x="468" y="230" width="150" height="64" rx="3"/>
+        <text class="node-title" x="482" y="256">VPC</text>
+        <text class="node-sub" x="482" y="276">Route table</text>
+
+        <rect class="node" x="640" y="230" width="150" height="64" rx="3"/>
+        <text class="node-title" x="654" y="256">COS VPE</text>
+        <text class="node-sub" x="654" y="276">Reserved IP · tcp/443</text>
+
+        <rect class="node" x="640" y="400" width="150" height="64" rx="3"/>
+        <text class="node-title" x="654" y="426">Transit Gateway</text>
+        <text class="node-sub" x="654" y="446">PER join · restore only</text>
+
+        <rect class="node" x="844" y="222" width="130" height="80" rx="3"/>
+        <text class="node-title" x="858" y="248">COS bucket</text>
+        <text class="node-sub" x="858" y="268">QBRMS_&lt;system&gt;</text>
+        <text class="node-sub" x="858" y="286">HMAC keys in ICC</text>
+
+        <rect class="node" x="1030" y="160" width="214" height="76" rx="3"/>
+        <text class="node-title" x="1044" y="186">IBM i NFS LPAR</text>
+        <text class="node-sub" x="1044" y="206">CPYFRMCLD + image catalog</text>
+        <text class="node-sub" x="1044" y="224">NFS export /install/sysipl</text>
+
+        <rect class="node" x="1030" y="390" width="214" height="76" rx="3"/>
+        <text class="node-title" x="1044" y="416">Restored LPAR</text>
+        <text class="node-sub" x="1044" y="436">Network install from NFS</text>
+        <text class="node-sub" x="1044" y="454">Then BRMS from COS</text>
+
+        <g data-group="backup">
+          <path class="flow backup" d="M 141 196 V 230"/>
+          <path class="flow backup" d="M 246 262 C 270 262, 280 220, 298 206"/>
+          <path class="flow backup" d="M 416 206 H 468"/>
+          <path class="flow backup" d="M 543 196 V 230"/>
+          <path class="flow backup" d="M 618 262 H 640"/>
+          <path class="flow backup" d="M 790 262 H 844"/>
+          <text class="lbl" fill="#3ddbd9" x="828" y="210">ALLOW tcp/443 ICC</text>
+        </g>
+
+        <g data-group="restore-pull">
+          <path class="flow restore-pull" d="M 1030 236 V 348 H 715 V 400"/>
+          <path class="flow restore-pull" d="M 715 400 V 294"/>
+          <path class="flow restore-pull" d="M 790 278 H 844"/>
+          <text class="lbl" fill="#4589ff" x="820" y="368">ALLOW 443 CPYFRMCLD</text>
+        </g>
+
+        <g data-group="restore-nfs">
+          <path class="flow restore-nfs" d="M 1137 236 V 390"/>
+          <text class="lbl" fill="#ff7eb6" x="1150" y="318">ALLOW NFS</text>
+        </g>
+
+        <g data-group="restore-remain">
+          <path class="flow restore-remain" d="M 1030 428 H 790"/>
+          <path class="flow restore-remain" d="M 715 400 V 294"/>
+          <text class="lbl" fill="#ffb784" x="800" y="444">ALLOW 443 after ICC</text>
+        </g>
+
+        <g data-group="deny">
+          <path class="flow deny" d="M 141 196 C 141 360, 220 430, 298 454"/>
+          <text class="lbl deny" x="48" y="360">DENY public COS</text>
+          <path class="flow deny" d="M 1137 466 V 520 H 909"/>
+          <text class="lbl deny" x="980" y="512">DENY IPL from COS</text>
+        </g>
+
+        <g class="ctrl-layer">
+          <path class="ctrl" d="M 490 196 V 230"/>
+          <text class="lbl ctrl-lbl" fill="#8d8d8d" x="468" y="108">RT: VPN CIDRs</text>
+          <path class="ctrl" d="M 543 294 C 543 360, 600 400, 640 432"/>
+          <text class="lbl ctrl-lbl" fill="#8d8d8d" x="458" y="348">advertise=true</text>
+          <path class="ctrl" d="M 715 230 V 112 H 790"/>
+          <text class="lbl ctrl-lbl" fill="#8d8d8d" x="655" y="108">DNS: COS name → VPE IP</text>
+        </g>
+      </svg>
+    </section>
+
+    <aside class="notes" id="notes">
+      <h2>How to read this</h2>
+      <p>Two conversations with the customer: the nightly save never touches PowerVS. The DR restore lives entirely in IBM Cloud after the bucket is written.</p>
+      <ol>
+        <li><strong>Backup entry:</strong> IBM i ICC, not a public COS URL. Traffic is IPsec to the VPC VPN gateway, then east to the COS VPE on tcp/443.</li>
+        <li><strong>Enforcement:</strong> VPN policy/routes (interesting traffic = IBM i subnet ↔ VPE subnet), VPC NACL/security group 443 to the VPE, IAM/HMAC on the bucket.</li>
+        <li><strong>Why PowerVS is dark on backup:</strong> ICC talks to object storage. The NFS LPAR is a restore helper, not a backup proxy.</li>
+        <li><strong>Why restore cannot skip NFS:</strong> IBM i cannot D-mode IPL from COS. QCLDBIPL optical must be copied down (CPYFRMCLD), cataloged, and NFS-exported before the target LPAR network-installs.</li>
+        <li><strong>Why Transit Gateway is on the drawing:</strong> PowerVS does not host VPEs. PER workspace → TGW → VPC → VPE is the private path for CPYFRMCLD. It is not on the on-prem backup path.</li>
+        <li><strong>Why public COS is denied:</strong> Keep the ICC resource URI on the private/direct endpoint so save data does not hairpin the public internet after the VPN.</li>
+      </ol>
+    </aside>
+  </div>
+
+  <div class="legend">
+    <span><i class="swatch" style="background:var(--teal)"></i>Backup · ICC HTTPS</span>
+    <span><i class="swatch" style="background:var(--blue)"></i>Restore pull · CPYFRMCLD</span>
+    <span><i class="swatch" style="background:var(--magenta)"></i>NFS network install</span>
+    <span><i class="swatch" style="background:var(--orange)"></i>Remaining COS restore</span>
+    <span><i class="swatch" style="background:var(--red)"></i>DENY</span>
+    <span><i class="swatch dash"></i>Control plane</span>
+    <span>* Only the VPC VPN gateway public IPs are exposed. VPE, COS, and both LPARs stay private.</span>
+  </div>
+  <footer>
+    Sources: IBM i 7.4 backing up / restoring from cloud · PowerVS IBM i Backups Tutorial (NFS helper) · VPC VPN and VPE docs. CIDRs not specified by the customer; add them in Arrange on the map play.
+  </footer>
+
+  <script>
+    const notes = {
+      all: `<h2>How to read this</h2><p>Two conversations with the customer: the nightly save never touches PowerVS. The DR restore lives entirely in IBM Cloud after the bucket is written.</p><ol><li><strong>Backup entry:</strong> IBM i ICC, not a public COS URL. Traffic is IPsec to the VPC VPN gateway, then east to the COS VPE on tcp/443.</li><li><strong>Enforcement:</strong> VPN policy/routes (interesting traffic = IBM i subnet ↔ VPE subnet), VPC NACL/security group 443 to the VPE, IAM/HMAC on the bucket.</li><li><strong>Why PowerVS is dark on backup:</strong> ICC talks to object storage. The NFS LPAR is a restore helper, not a backup proxy.</li><li><strong>Why restore cannot skip NFS:</strong> IBM i cannot D-mode IPL from COS. QCLDBIPL optical must be copied down (CPYFRMCLD), cataloged, and NFS-exported before the target LPAR network-installs.</li><li><strong>Why Transit Gateway is on the drawing:</strong> PowerVS does not host VPEs. PER workspace → TGW → VPC → VPE is the private path for CPYFRMCLD. It is not on the on-prem backup path.</li><li><strong>Why public COS is denied:</strong> Keep the ICC resource URI on the private/direct endpoint so save data does not hairpin the public internet after the VPN.</li></ol>`,
+      backup: `<h2>1 · On-prem backup</h2><p>BRMS writes virtual media to local disk, then ICC copies it to COS. PowerVS is idle.</p><ol><li>Sign on to the production IBM i. Confirm the ICC cloud location with WRKLOCBRM.</li><li>Restricted-state save, in order: <code>STRBKUBRM CTLGRP(QCLDBSYS01)</code> (virtual tape: *IBM, *ALLUSR, DLO, IFS), then <code>STRBKUBRM CTLGRP(QCLDBIPL01)</code> (virtual optical: SAVSYS + BRMS/ICC/TCP objects needed to boot).</li><li>ICC transfers volumes to the bucket (automatic on QCLD* control groups, or CPYTOCLD). Watch WRKSTSICC.</li><li><strong>Path:</strong> IBM i → on-prem VPN → IPsec → VPC VPN GW → VPC → COS VPE :443 → COS.</li><li>CRTS3RICC resource URI must be the COS <em>private</em> or <em>direct</em> endpoint, HMAC keys from COS service credentials, DNS or host table to the VPE reserved IP.</li></ol><p>VPN local CIDRs = VPC subnet holding the VPE. Remote CIDRs = IBM i subnet. UDP 500/4500 and ESP between peers. No TGW required for this flow.</p>`,
+      restore: `<h2>2 · Cloud restore</h2><p>Three hops. COS is not bootable. The NFS LPAR is the install server; the restored LPAR is the empty target.</p><ol><li><strong>2a Pull:</strong> NFS LPAR CPYFRMCLD of QCLDBIPL volumes from COS through VPE (PowerVS → TGW → VPC → VPE → COS).</li><li><strong>2b Install:</strong> Load image catalog, VFYIMGCLG, CHGNFSEXP, STRNFSSVR. Target CRTDEVOPT 632B-003 pointed at the NFS IP, then STRNETINS / D-mode for LIC + OS.</li><li><strong>2c Remainder:</strong> Recover BRMS, TCP, and ICC on the target, register cloud volumes, STRTCP, then STRRCYBRM pulls QCLDBSYS* from COS. Same VPE path, now sourced from the restored LPAR (or still from the helper).</li></ol><p>Both PowerVS LPARs need IPv4 and must ping each other. NFS helper disk ≈ IPL image set. Target disk ≈ full system.</p>`,
+      "restore-pull": `<h2>2a · Pull IPL media</h2><p>Entry point is the NFS LPAR, not the empty target.</p><ol><li>Provision an IBM i VSI in the DR PowerVS workspace with PTFs current (7.2+).</li><li>MKDIR /install/sysipl. CPYFRMCLD each QCLDBIPL volume from the ICC resource (files under QBRMS_&lt;source-system&gt;).</li><li>Data path ALLOW: NFS LPAR → Transit Gateway → VPC → COS VPE :443 → bucket.</li><li>If this hop fails, check PER + TGW attachments, VPC route table “accept routes from Transit Gateway”, and DNS for the private COS hostname.</li></ol>`,
+      "restore-nfs": `<h2>2b · NFS network install</h2><p>East-west only. Stays inside the PowerVS subnet.</p><ol><li>CRTDEVOPT INSTALL, CRTIMGCLG SYSIPL DIR('/install/sysipl'), ADDIMGCLGE, LODIMGCLG, VFYIMGCLG TYPE(*LIC) NFSSHR(*YES).</li><li>STRNFSSVR SERVER(*ALL) and CHGNFSEXP OPTIONS('-i -o ro') DIR('/install/sysipl').</li><li>On the target: CRTDEVOPT with LCLINTNETA(*SRVLAN), RMTINTNETA = NFS LPAR IP, NETIMGDIR('/install/sysipl'). STRNETINS for LIC.</li><li>ALLOW NFS and IBM i network-install between the two LPARs. DENY any attempt to IPL the target straight from COS.</li></ol>`,
+      "restore-remain": `<h2>2c · Remaining COS restore</h2><p>After LIC, OS, BRMS, TCP, and ICC exist on the target, BRMS can pull the rest of the media itself.</p><ol><li>Follow the BRMS recovery report (STRRCYBRM OPTION(*CTLGRP) ACTION(*REPORT)).</li><li>Register cloud volumes; ADDLIBLE QICC; start TCP on the documented interface.</li><li>STRRCYBRM downloads QCLDBSYS* from COS through the same VPE. ALLOW 443 from the restored LPAR once ICC is configured.</li><li>Until that point the restored LPAR has no ICC, so it cannot be the COS client.</li></ol>`
+    };
+    const diagram = document.querySelector(".diagram");
+    const buttons = document.querySelectorAll("[data-flow]");
+    function setFlow(id) {
+      buttons.forEach((b) => b.classList.toggle("is-on", b.dataset.flow === id));
+      diagram.classList.toggle("dim", id !== "all");
+      document.querySelectorAll("[data-group]").forEach((g) => {
+        const match = id === "all" || g.dataset.group === id || (id === "restore" && g.dataset.group.startsWith("restore"));
+        g.classList.toggle("show", id !== "all" && match);
+      });
+      document.getElementById("notes").innerHTML = notes[id] || notes.all;
+    }
+    buttons.forEach((b) => b.addEventListener("click", () => setFlow(b.dataset.flow)));
+    document.getElementById("ctrl-btn").addEventListener("click", (e) => {
+      e.currentTarget.classList.toggle("is-on");
+      document.body.classList.toggle("hide-ctrl", !e.currentTarget.classList.contains("is-on"));
+    });
+    document.getElementById("theme-btn").addEventListener("click", () => {
+      const root = document.documentElement;
+      root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+    });
+  </script>
+</body>
+</html>

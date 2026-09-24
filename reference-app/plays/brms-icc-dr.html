@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BRMS + ICC on-prem to COS · IBM Cloud Synergies Map</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23161616'/%3E%3Ccircle cx='50' cy='50' r='10' fill='%230f62fe'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../css/play.css?v=flow">
+</head>
+<body data-play="brms-icc-dr">
+  <div id="app">
+    <header class="cds-shell">
+      <div class="cds-shell__bar1">
+        <div class="cds-shell__brand">
+          <span class="cds-shell__wordmark">IBM Cloud</span>
+          <span class="cds-shell__divider" aria-hidden="true"></span>
+          <span class="cds-shell__product">PowerVS play</span>
+        </div>
+        <nav class="view-switch" aria-label="Play">
+          <span class="view-chip is-current" aria-current="page">BRMS + ICC DR</span>
+          <a class="view-chip" href="./brms-icc-dr-traffic.html">Network overview</a>
+          <a class="view-chip" href="./brms-icc-onprem-restore.html">On-prem restore</a>
+          <button type="button" class="view-chip view-chip-btn" id="arrange-btn" aria-pressed="false">Arrange</button>
+        </nav>
+        <div class="cds-shell__meta">
+          <a class="cds-shell__catalog" href="./powervs-dr.html">All backup options</a>
+          <button type="button" class="cds-shell__theme-btn" id="theme-btn" aria-label="Toggle theme">
+            <span class="icon-glyph" aria-hidden="true">◐</span>
+          </button>
+        </div>
+      </div>
+      <div class="cds-shell__bar2">
+        <p class="play-lede" id="play-lede"></p>
+        <nav id="group-legend" aria-label="Play groups"></nav>
+      </div>
+      <div class="cds-shell__bar3">
+        <span class="bar3-label">Flows</span>
+        <nav id="backup-toggles" aria-label="Backup and restore flows"></nav>
+        <div id="arrange-tools" hidden>
+          <span class="bar3-label">Layout</span>
+          <button type="button" class="tool-chip" id="add-box-btn">Add box</button>
+          <button type="button" class="tool-chip" id="add-note-btn">Add text box</button>
+          <button type="button" class="tool-chip" id="copy-layout-btn">Copy layout JSON</button>
+          <button type="button" class="tool-chip" id="reset-layout-btn">Reset layout</button>
+          <span class="arrange-status" id="arrange-status">Default layout</span>
+        </div>
+      </div>
+    </header>
+
+    <div id="main">
+      <section id="map-area" aria-label="BRMS plus ICC disaster recovery play">
+        <svg id="svg-connections" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div id="group-labels"></div>
+        <div id="nodes"></div>
+        <div id="notes"></div>
+      </section>
+
+      <aside id="sidebar" aria-label="Resource detail">
+        <div id="sidebar-header">
+          <span class="sidebar-title">This play</span>
+          <button type="button" id="reset-btn">Show whole play</button>
+        </div>
+        <div id="sidebar-inner"></div>
+      </aside>
+    </div>
+
+    <footer id="footer">
+      <div class="footer-stats" id="footer-stats"></div>
+      <span class="footer-hint" id="footer-hint"></span>
+    </footer>
+  </div>
+  <script type="module" src="../js/play.js?v=flow"></script>
+</body>
+</html>

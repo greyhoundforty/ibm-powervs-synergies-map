@@ -1,0 +1,1049 @@
+[
+  {
+    "id": "vpc",
+    "label": "IBM Cloud VPC",
+    "cat": "compute",
+    "plays": [
+      1
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/vpc",
+    "desc": "Software-defined private network where virtual server instances, load balancers, and attached IBM Cloud services run in isolated subnets across multi-zone regions.",
+    "value": "Gives sellers a default landing zone for x86 workloads and a private attachment point for IKS, ROKS, and PowerVS, without sending east-west traffic over the public internet.",
+    "questions": [
+      "Do you need a private, zonal network for new IBM Cloud workloads?",
+      "Are IKS or ROKS clusters going to land on VPC rather than classic?",
+      "Do PowerVS or on-prem networks need to reach IBM Cloud services privately?",
+      "Are you starting from a landing-zone pattern with management and workload VPCs?"
+    ],
+    "competitors": [
+      "Amazon VPC",
+      "Azure Virtual Network",
+      "Google Cloud VPC"
+    ],
+    "differentiators": [
+      "Native home for IKS and ROKS worker nodes",
+      "VPE gateways to IBM Cloud platform services, including the VPC API itself",
+      "Transit Gateway attachment for PowerVS PER workspaces"
+    ]
+  },
+  {
+    "id": "iks",
+    "label": "IBM Kubernetes Service",
+    "cat": "compute",
+    "plays": [
+      1
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/containers",
+    "desc": "Managed Kubernetes on IBM Cloud VPC, with IBM operating the control plane and integrating IBM Cloud IAM, registry, storage, and add-ons.",
+    "value": "Fastest path to run containers on IBM Cloud when the customer wants upstream Kubernetes rather than a full OpenShift stack.",
+    "questions": [
+      "Do you want managed Kubernetes without operating etcd and the API server?",
+      "Will worker nodes live in an existing VPC?",
+      "Do you need IBM Cloud IAM, Secrets Manager, or Key Protect on day one?",
+      "Is OpenShift required, or is Kubernetes enough?"
+    ],
+    "competitors": [
+      "Amazon EKS",
+      "Azure Kubernetes Service",
+      "Google Kubernetes Engine"
+    ],
+    "differentiators": [
+      "Control plane included and patched by IBM",
+      "VPC-native workers, Block Storage CSI, and IBM Cloud IAM",
+      "Catalog integrations for Secrets Manager, Key Protect, Logs, and Monitoring"
+    ]
+  },
+  {
+    "id": "roks",
+    "label": "Red Hat OpenShift",
+    "cat": "compute",
+    "plays": [
+      1
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/openshift",
+    "desc": "Managed Red Hat OpenShift on IBM Cloud VPC, with the same IBM Cloud integrations as IKS plus OpenShift operators, ODF, and Fusion options.",
+    "value": "Use when the account already standardizes on OpenShift, Cloud Paks, or operator-based data services that IKS does not carry.",
+    "questions": [
+      "Is OpenShift already the container platform standard?",
+      "Do you need Operators, ODF, or IBM Storage Fusion?",
+      "Will this cluster host Cloud Paks or other Red Hat certified operators?",
+      "Do you need the same IBM Cloud IAM and Secrets Manager pattern as IKS?"
+    ],
+    "competitors": [
+      "Red Hat OpenShift on AWS (ROSA)",
+      "Azure Red Hat OpenShift",
+      "Self-managed OpenShift"
+    ],
+    "differentiators": [
+      "IBM-managed OpenShift control plane on VPC",
+      "Parity with IKS for Secrets Manager, Key Protect, Logs, and Registry",
+      "OpenShift-only path to ODF, Fusion, and many Cloud Pak operators"
+    ]
+  },
+  {
+    "id": "code_engine",
+    "label": "IBM Cloud Code Engine",
+    "cat": "compute",
+    "plays": [
+      1
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/codeengine",
+    "desc": "Fully managed serverless runtime for containers, batch jobs, and functions. Workloads run in IBM-managed VPC, not in the customer VPC.",
+    "value": "Removes cluster operations when the workload is event-driven or bursty, while still binding to COS, Event Streams, and other IBM Cloud services.",
+    "questions": [
+      "Do you want containers without managing a cluster?",
+      "Are jobs triggered by COS, Kafka, cron, or HTTP?",
+      "Does the app need private reach into a customer VPC backend?",
+      "Is a full IKS or ROKS cluster more than this workload needs?"
+    ],
+    "competitors": [
+      "AWS Fargate / Lambda",
+      "Azure Container Apps",
+      "Google Cloud Run"
+    ],
+    "differentiators": [
+      "One runtime for apps, jobs, and functions",
+      "Native COS mounts and COS event subscriptions",
+      "Private Path or Satellite Connector for private backends"
+    ]
+  },
+  {
+    "id": "powervs",
+    "label": "IBM Power Virtual Server",
+    "cat": "compute",
+    "plays": [
+      1
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas",
+    "desc": "IBM Power AIX, IBM i, and Linux on Power as a cloud service. PER workspaces attach to Transit Gateway for VPC, IBM Cloud services, VPC VPN, and — in DCs without Power public subnets — a VPC NLB in routing mode for internet.",
+    "value": "Moves Power estates to IBM Cloud without a platform rewrite, then privately reaches COS, VPC apps, and remote users through Transit Gateway. Do not sell PowerVS VPNaaS; that product ended 14 July 2025.",
+    "questions": [
+      "Are AIX, IBM i, or Linux on Power workloads moving to cloud?",
+      "Is the workspace PER-enabled so Transit Gateway is the path?",
+      "Do remote users need client-to-site, or does the datacenter need site-to-site VPC VPN?",
+      "Is backup Compass BaaS, a FalconStor StorSafe VTL on Power, or BRMS/Storage Protect into COS?"
+    ],
+    "competitors": [
+      "On-premises Power Systems",
+      "Oracle Cloud Power",
+      "x86 rehost / rewrite"
+    ],
+    "differentiators": [
+      "Native AIX and IBM i in IBM Cloud",
+      "PER plus Transit Gateway into VPC, VPC VPN, and NLB internet",
+      "Same account as IKS, ROKS and COS"
+    ]
+  },
+  {
+    "id": "transit_gateway",
+    "label": "Transit Gateway",
+    "cat": "networking",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/transit-gateway",
+    "desc": "Hub that interconnects VPCs, Direct Link, classic, and PowerVS PER workspaces so attached networks can route privately.",
+    "value": "Default private backbone between PowerVS, VPC landing zones, and hybrid Direct Link, instead of pairwise tunnels.",
+    "questions": [
+      "Do two or more VPCs need to talk privately?",
+      "Is a PowerVS PER workspace joining a VPC landing zone?",
+      "Is on-premises traffic arriving on Direct Link?",
+      "Do you need global routing across IBM Cloud regions?"
+    ],
+    "competitors": [
+      "AWS Transit Gateway",
+      "Azure Virtual WAN",
+      "Pairwise VPC peering only"
+    ],
+    "differentiators": [
+      "Native PowerVS PER attachment type",
+      "Same hub for VPC, Direct Link, and Power",
+      "VPE-enabled control plane; data path is still the TGW attachment"
+    ]
+  },
+  {
+    "id": "direct_link",
+    "label": "Direct Link",
+    "cat": "networking",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/dl",
+    "desc": "Private circuit from a customer network or colo into IBM Cloud, typically attached to Transit Gateway for VPC and PowerVS reachability.",
+    "value": "Keeps hybrid and large-data flows off the public internet when customers already have a colo or on-prem backbone.",
+    "questions": [
+      "Do you already have a private circuit into IBM Cloud?",
+      "Must on-prem systems reach VPC or PowerVS without the internet?",
+      "Is this for bulk data, latency, or compliance?",
+      "Will the circuit attach to Transit Gateway?"
+    ],
+    "competitors": [
+      "AWS Direct Connect",
+      "Azure ExpressRoute",
+      "Site-to-site VPN only"
+    ],
+    "differentiators": [
+      "Attaches to Transit Gateway with VPC and PowerVS",
+      "Useful for IBM i / AIX hybrid adjacency",
+      "VPE-enabled control plane; the circuit is still the data path"
+    ]
+  },
+  {
+    "id": "vpn_site_to_site",
+    "label": "Site-to-site VPN",
+    "cat": "networking",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-getting-started",
+    "desc": "IPsec VPN gateway on a VPC subnet for connecting a VPC — and, through Transit Gateway or a Cloud Connection, PowerVS — to on-premises or another private network. Policy-based or route-based; dynamic route-based connections require Transit Gateway and BGP. This is the replacement for PowerVS VPNaaS, which ended 14 July 2025.",
+    "value": "The hybrid path when Direct Link is not justified, the documented backup path when Direct Link is on the same Transit Gateway, and the PowerVS site-to-site VPN after VPNaaS end of life.",
+    "questions": [
+      "Is this a new IPsec tunnel into a VPC, a backup for Direct Link, or the PowerVS VPN replacement?",
+      "Policy-based (required in the PowerVS VPN doc), static route-based, or dynamic BGP with Transit Gateway?",
+      "PER workspace (Transit Gateway) or non-PER (Cloud Connection)?",
+      "Do remote users also need client-to-site into the same VPC and Power workspace?"
+    ],
+    "competitors": [
+      "AWS Site-to-Site VPN",
+      "Azure VPN Gateway",
+      "Software IPsec appliances"
+    ],
+    "differentiators": [
+      "Native VPC gateway, no NVA for basic hybrid",
+      "Dynamic route-based mode attaches to Transit Gateway",
+      "Documented as Direct Link backup and the PowerVS VPNaaS replacement"
+    ]
+  },
+  {
+    "id": "vpn_client_to_site",
+    "label": "Client-to-site VPN",
+    "cat": "networking",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/vpc?topic=vpc-about-client-to-site-vpn-servers",
+    "desc": "OpenVPN client-to-site VPN server on VPC subnets so remote devices can reach the VPC and, through Transit Gateway or a Cloud Connection, PowerVS. Server and client certificates are stored in Secrets Manager. Can also ride a site-to-site gateway to on-premises.",
+    "value": "Admin and telecommuter access into a landing-zone VPC and attached PowerVS workspace without standing up a site-to-site tunnel for every laptop. Certificate auth is a Secrets Manager conversation, not a PSK conversation.",
+    "questions": [
+      "Do people need to reach the VPC or PowerVS from laptops, or is this network-to-network IPsec?",
+      "Will certificates live in Secrets Manager (required for the VPN server cert)?",
+      "Should one VPN server reach other VPCs and PowerVS through Transit Gateway?",
+      "Should the same clients also reach on-prem through a site-to-site VPN?"
+    ],
+    "competitors": [
+      "AWS Client VPN",
+      "Azure VPN Gateway point-to-site",
+      "OpenVPN Access Server"
+    ],
+    "differentiators": [
+      "OpenVPN clients, HA across two subnets",
+      "Certificates come from Secrets Manager",
+      "Integrates with Transit Gateway, PowerVS, and site-to-site VPN rather than duplicating tunnels"
+    ]
+  },
+  {
+    "id": "cis",
+    "label": "Cloud Internet Services",
+    "cat": "networking",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/cis",
+    "desc": "Global DNS, WAF, DDoS, and CDN in front of public IBM Cloud applications, including VPC load balancers and Code Engine hostnames.",
+    "value": "Puts an IBM-operated edge in front of internet-facing IKS, ROKS, VPC, or Code Engine apps.",
+    "questions": [
+      "Is the application exposed to the public internet?",
+      "Do you need WAF, DDoS, or a global anycast hostname?",
+      "Are you fronting a VPC load balancer or Code Engine app?",
+      "Is DNS for a custom domain staying at IBM Cloud?"
+    ],
+    "competitors": [
+      "Cloudflare",
+      "AWS CloudFront / Shield",
+      "Akamai"
+    ],
+    "differentiators": [
+      "IBM Cloud catalog service with IAM",
+      "Works in front of VPC ALB and Code Engine",
+      "Combines DNS, WAF, and DDoS without a third-party contract"
+    ]
+  },
+  {
+    "id": "dns",
+    "label": "DNS Services",
+    "cat": "networking",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/dns-svcs",
+    "desc": "Private and public DNS on IBM Cloud. Custom resolvers let PowerVS and VPC resolve VPE hostnames. The DNS Services API is itself VPE-enabled, can be locked with CBR, and emits platform metrics plus platform logs.",
+    "value": "Required glue for VPE and PowerVS-to-VPC patterns: without private DNS, services resolve to public endpoints. Treat the DNS API like any other platform service: VPE for private calls, CBR for where those calls may come from, Monitoring for query health, Logs for resolver and health-check events.",
+    "questions": [
+      "Do VPC or PowerVS workloads need to resolve private VPE names?",
+      "Should the DNS Services API be reached only over a VPE (`api.private.dns-svcs.cloud.ibm.com`)?",
+      "Do CBR rules need to lock DNS APIs to named VPCs or IP zones?",
+      "Do they want IBM Cloud Monitoring dashboards and IBM Cloud Logs for custom resolvers and health checks?"
+    ],
+    "competitors": [
+      "Amazon Route 53",
+      "Azure Private DNS",
+      "BIND / Infoblox"
+    ],
+    "differentiators": [
+      "Private DNS linked to VPCs",
+      "VPE to the DNS API plus automatic VPE hostname records",
+      "CBR, IBM Cloud Monitoring, and IBM Cloud Logs are documented first-class attachments"
+    ]
+  },
+  {
+    "id": "vpc_lb",
+    "label": "VPC Load Balancer",
+    "cat": "networking",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/vpc?topic=vpc-load-balancers-about",
+    "desc": "Application and network load balancers inside a VPC, including SSL offload using certificates stored in Secrets Manager. A private network load balancer in routing mode is also the documented internet gateway for PowerVS in data centers that cannot attach a public subnet to the LPAR.",
+    "value": "Default north-south and east-west load balancing for VPC VSIs, the IBM Cloud Ingress path for IKS/ROKS on VPC, and the NLB-as-router path for PowerVS public connectivity.",
+    "questions": [
+      "Do VPC applications need HTTP(S) or TCP load balancing?",
+      "Should TLS certificates come from Secrets Manager?",
+      "Is this the Ingress path for an IKS or ROKS cluster?",
+      "Does a PowerVS workspace in this DC need NLB routing mode for internet instead of a Power public subnet?"
+    ],
+    "competitors": [
+      "AWS ELB / ALB",
+      "Azure Load Balancer / App Gateway",
+      "HAProxy / F5"
+    ],
+    "differentiators": [
+      "Native VPC construct used by IKS/ROKS Ingress",
+      "Secrets Manager certificate authorization",
+      "Private NLB routing mode is the PowerVS internet path in DCs without Power public subnets"
+    ]
+  },
+  {
+    "id": "vpe",
+    "label": "Virtual Private Endpoint",
+    "cat": "networking",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/vpc?topic=vpc-vpe-supported-services",
+    "desc": "Private IP in a VPC subnet that fronts an IBM Cloud service or a non-IBM Cloud Private Path CRN. IaaS-scoped targets include COS, Code Engine, Container Registry, CBR, Direct Link, DNS Services, Event Notifications, IAM, Logs, Key Protect, Schematics, Secrets Manager, Transit Gateway, and the VPC API.",
+    "value": "The standard way VPC and, via Transit Gateway, PowerVS reach platform services without public endpoints. Direct Link and Transit Gateway VPEs are control-plane APIs; the data path is still the circuit or TGW attachment.",
+    "questions": [
+      "Must COS, Secrets Manager, Key Protect, Logs, or Container Registry stay off the public internet?",
+      "Is this a Financial Services or private-only account that also needs private IAM, CBR, DNS, Schematics, or VPC API?",
+      "Will PowerVS reach the VPE through Transit Gateway?",
+      "Which VPE-enabled services in this account are not on the IaaS map (Databases, Event Streams, MQ, Watson)?"
+    ],
+    "competitors": [
+      "AWS PrivateLink",
+      "Azure Private Endpoint",
+      "Public service endpoints"
+    ],
+    "differentiators": [
+      "Documented VPE list spans data services, IAM, DNS, Direct Link, Transit Gateway, and the VPC API",
+      "Path from PowerVS when TGW + DNS are in place",
+      "Can also target a Private Path CRN for non-IBM Cloud services"
+    ]
+  },
+  {
+    "id": "public_gateway",
+    "label": "Public Gateway",
+    "cat": "networking",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/vpc?topic=vpc-public-gateways",
+    "desc": "Zonal SNAT so VPC subnet resources can reach the internet without a floating IP on every instance.",
+    "value": "Default outbound path for VPC workers, VSIs, and patching when a subnet is not fully private.",
+    "questions": [
+      "Do worker nodes or VSIs need outbound internet?",
+      "Is this subnet supposed to be private-only via VPE?",
+      "Are you using a landing-zone edge VPC instead?",
+      "Do IKS/ROKS workers pull images from public registries?"
+    ],
+    "competitors": [
+      "AWS NAT Gateway",
+      "Azure NAT Gateway",
+      "Explicit floating IPs"
+    ],
+    "differentiators": [
+      "Per-zone attach to VPC subnets",
+      "Default on many IKS/ROKS worker subnets",
+      "Simple alternative until a private-only design lands"
+    ]
+  },
+  {
+    "id": "satellite_connector",
+    "label": "Satellite Connector",
+    "cat": "networking",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/satellite?topic=satellite-understand-connectors",
+    "desc": "Outbound TLS tunnel from a lightweight agent so IBM Cloud callers (notably Code Engine) can reach private backends without opening inbound firewall holes.",
+    "value": "Use when the caller is not in the customer VPC and Private Path does not apply. Not the PowerVS-to-VPC path; that is Transit Gateway.",
+    "questions": [
+      "Can the environment run a connector agent with outbound 443 only?",
+      "Is Private Path available because the backend is in a customer VPC?",
+      "Does Code Engine need to call a private backend that cannot expose an inbound listener?",
+      "Is the real need Power-to-VPC routing? If yes, use Transit Gateway instead."
+    ],
+    "competitors": [
+      "VPN / Direct Link only",
+      "Expose the backend publicly",
+      "Full Satellite location"
+    ],
+    "differentiators": [
+      "Outbound-only, no inbound firewall change",
+      "Documented for Code Engine private backends",
+      "Agent image includes ppc64le, but PER/TGW remains the PowerVS network path"
+    ]
+  },
+  {
+    "id": "cos",
+    "label": "Cloud Object Storage",
+    "cat": "storage",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/cloud-object-storage",
+    "desc": "Regional or cross-region object storage used as the common data plane for backups, Flow Logs, and Code Engine mounts. Buckets can publish usage and request metrics to IBM Cloud Monitoring, and management, read, and write events to IBM Cloud Logs through Activity Tracker Event Routing.",
+    "value": "The IBM Cloud service that almost every hub already has a documented path to: VPE from VPC, direct endpoints from PowerVS PER, CSI/backup from IKS/ROKS, mounts from Code Engine. Observability is on the bucket, not a sidecar.",
+    "questions": [
+      "Where do backups, logs, and unstructured data land?",
+      "Do you need private endpoints from VPC or PowerVS?",
+      "Should Code Engine jobs mount a bucket?",
+      "Should this bucket send usage and request metrics to IBM Cloud Monitoring?",
+      "Should bucket access and config events go to IBM Cloud Logs?"
+    ],
+    "competitors": [
+      "Amazon S3",
+      "Azure Blob Storage",
+      "Google Cloud Storage"
+    ],
+    "differentiators": [
+      "VPE plus PowerVS PER direct endpoints",
+      "Native Code Engine data store and event source",
+      "Default target for landing-zone Flow Logs",
+      "Bucket metrics to Monitoring and audit events to Cloud Logs"
+    ]
+  },
+  {
+    "id": "block_storage",
+    "label": "Block Storage for VPC",
+    "cat": "storage",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-vpc",
+    "desc": "Hypervisor-attached volumes for VPC VSIs and the default CSI persistent volumes for IKS and ROKS on VPC. Volumes are IBM-managed encrypted by default; customer-managed encryption uses a Key Protect Standard or Dedicated root key.",
+    "value": "You get this by choosing VPC compute: VSIs, IKS workers, and ROKS workers all consume it without a third-party SDS. Ask BYOK at create time — encryption type does not change later.",
+    "questions": [
+      "Do VPC VSIs need persistent disks?",
+      "Are IKS or ROKS apps using Kubernetes PVs?",
+      "Should volumes use a customer root key in Key Protect Standard or Dedicated?",
+      "Do you need snapshots or Backup and Recovery on those volumes?"
+    ],
+    "competitors": [
+      "Amazon EBS",
+      "Azure Managed Disks",
+      "Portworx as primary storage"
+    ],
+    "differentiators": [
+      "Default storage class on IKS/ROKS VPC",
+      "Customer-managed encryption with Key Protect Standard or Dedicated",
+      "Snapshot and backup integration on VPC"
+    ]
+  },
+  {
+    "id": "file_storage",
+    "label": "File Storage for VPC",
+    "cat": "storage",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/vpc?topic=vpc-file-storage-vpc",
+    "desc": "NFS file shares in a VPC, mountable by VSIs and by IKS/ROKS through the file CSI driver. Shares are IBM-managed encrypted by default; customer-managed encryption uses a Key Protect Standard or Dedicated root key. Throughput, IOPS, and capacity publish as IBM Cloud Monitoring platform metrics.",
+    "value": "Shared POSIX storage when multiple VSIs or pods must see the same files, without standing up ODF or Portworx. BYOK is set at create; Monitoring is how you watch IOPS before you resize.",
+    "questions": [
+      "Do multiple VSIs or pods need a shared filesystem?",
+      "Should the share use a customer root key in Key Protect Standard or Dedicated?",
+      "Do they need IBM Cloud Monitoring for share throughput, IOPS, and capacity?",
+      "Is NFS enough, or do you need RWX SDS?"
+    ],
+    "competitors": [
+      "Amazon EFS",
+      "Azure Files",
+      "OpenShift Data Foundation"
+    ],
+    "differentiators": [
+      "Native VPC share, billed with IBM Cloud",
+      "Customer-managed encryption with Key Protect Standard or Dedicated",
+      "Platform metrics in IBM Cloud Monitoring"
+    ]
+  },
+  {
+    "id": "backup_recovery",
+    "label": "Backup and Recovery",
+    "cat": "storage",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/backup-recovery",
+    "desc": "IBM Cloud Backup and Recovery for VPC VSIs, volumes, and IKS/ROKS clusters via a data-source connector. PowerVS protection is not GA on this service.",
+    "value": "Platform backup conversation for VPC and containers. For PowerVS, use the Compass Backup or FalconStor StorSafe chips, not this tile.",
+    "questions": [
+      "Do you need policy-based backup of VPC VSIs or block volumes?",
+      "Should IKS or ROKS clusters be registered as data sources?",
+      "Is the workload on PowerVS? If yes, this is not the GA product — use Compass or FalconStor.",
+      "Are you also using COS Native Backup for buckets?"
+    ],
+    "competitors": [
+      "Veeam",
+      "Commvault",
+      "Velero only"
+    ],
+    "differentiators": [
+      "IBM Cloud catalog service with IAM",
+      "Connectors for VPC and IKS/ROKS",
+      "Does not replace Compass or FalconStor for PowerVS"
+    ]
+  },
+  {
+    "id": "compass",
+    "label": "Compass Backup",
+    "cat": "storage",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "partner",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-backup-strategies#baas",
+    "desc": "Secure Automated Backup with Compass for Power VS. Cobalt Iron catalog BaaS, powered by IBM Storage Protect, for AIX, Linux, IBM i, Oracle, Db2, and SAP HANA on PowerVS.",
+    "value": "The IBM Cloud catalog backup offering for PowerVS. Provisioning creates a dedicated backup VPC, Transit Gateway, and VPEs to Compass Vaults. AIX/Linux use a Compass agent; IBM i uses a Compass iSCSI VTL as the BRMS or SAV target.",
+    "questions": [
+      "Do they want catalog BaaS instead of operating a backup stack on PowerVS?",
+      "Single-copy in one DC, or dual-copy across a documented DC pair?",
+      "Are the PowerVS workspaces on the same regional Transit Gateway as the Compass VPC?",
+      "IBM i via Compass VTL, or AIX/Linux via the Compass agent?"
+    ],
+    "competitors": [
+      "FalconStor StorSafe",
+      "Self-managed Storage Protect / BRMS to COS",
+      "IBM Cloud Backup and Recovery (not GA for PowerVS)"
+    ],
+    "differentiators": [
+      "IBM Cloud catalog BaaS billed by stored GB after compression",
+      "Automation stands up the backup VPC, TGW, and VPEs",
+      "Do not put other workloads in the Compass backup VPC"
+    ]
+  },
+  {
+    "id": "falconstor",
+    "label": "FalconStor StorSafe",
+    "cat": "storage",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "partner",
+    "docsUrl": "https://www.falconstor.com/partners/ibm-partnership/powervs-resident-backup/",
+    "desc": "Partner virtual tape library that runs as a PowerVS instance. IBM i, AIX, and Linux backup clients (BRMS, Storage Protect, Veeam) talk iSCSI to StorSafe; StorSafe deduplicates into IBM Cloud Object Storage. StorSight, the management portal, runs on VPC or classic x86.",
+    "value": "Use when they want a Power-resident VTL they operate, hybrid replication from on-prem StorSafe, or IBM i workload migration — not managed Compass BaaS.",
+    "questions": [
+      "Do they already run FalconStor or another VTL on-prem and need the same target in PowerVS?",
+      "Is this native backup in-cloud, cloud-to-cloud replication, hybrid DR, or IBM i migration?",
+      "Will StorSafe use COS as the S3 deduplication repository?",
+      "Is StorSight landing on VPC (preferred) or classic?"
+    ],
+    "competitors": [
+      "Compass Backup",
+      "Physical/virtual tape to COS via BRMS",
+      "IBM Cloud Backup and Recovery (not GA for PowerVS)"
+    ],
+    "differentiators": [
+      "IBM Cloud catalog image and a Deployable Architecture tile",
+      "VTL compatible with BRMS, Storage Protect, and Veeam",
+      "COS is the long-term deduplicated store, not a Compass Vault"
+    ]
+  },
+  {
+    "id": "odf",
+    "label": "OpenShift Data Foundation",
+    "cat": "storage",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/openshift?topic=openshift-ocs-storage-prep",
+    "desc": "Red Hat SDS add-on on ROKS (Ceph, Rook, and NooBaa). One operator stack presents File, Block, and Object storage classes. On VPC virtual workers the OSDs are Block Storage for VPC volumes; bare-metal workers use local disks. Docs still use the old OCS topic slug.",
+    "value": "The OpenShift-native storage add-on when Block CSI or File Storage is not enough: RWX, object bucket claims, and data replicated across three OSDs. It is not IBM Storage Fusion.",
+    "questions": [
+      "Do ROKS apps need File, Block, and Object from one SDS rather than VPC CSI only?",
+      "Are workers VPC virtual (Block Storage for VPC OSDs) or bare metal (local disks)?",
+      "Essentials or Advanced (KMS encryption, regional DR, stretched clusters)?",
+      "Should NooBaa use IBM Cloud Object Storage as the backing store?"
+    ],
+    "competitors": [
+      "Portworx",
+      "IBM Storage Fusion",
+      "VPC Block CSI + File Storage only"
+    ],
+    "differentiators": [
+      "IBM Cloud ROKS add-on (Classic and VPC), not IKS",
+      "Unified File, Block, and Object from the same raw block",
+      "Optional COS backing store for the Multicloud Object Gateway"
+    ]
+  },
+  {
+    "id": "storage_fusion",
+    "label": "IBM Storage Fusion",
+    "cat": "storage",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://www.ibm.com/docs/en/storage-fusion",
+    "desc": "IBM Storage Scale plus data protection operators on ROKS for backup and restore of Kubernetes applications, typically with COS as the object store. This is not OpenShift Data Foundation.",
+    "value": "ROKS-first upsell when they want IBM Storage data protection on OpenShift. Sell ODF when they need Ceph SDS; sell Fusion when they need backup/data platform on top of or instead of Velero.",
+    "questions": [
+      "Is the cluster ROKS rather than IKS?",
+      "Do you need application-consistent container backup beyond Velero?",
+      "Is ODF already covering persistent volumes, or is Fusion the data-protection layer?",
+      "Is Fusion HCI or Fusion software the target?"
+    ],
+    "competitors": [
+      "Portworx Backup",
+      "Velero + COS only",
+      "OpenShift Data Foundation alone"
+    ],
+    "differentiators": [
+      "Operator install on OpenShift",
+      "IBM Storage Protect Plus lineage for containers",
+      "Not the IKS default and not the ODF add-on"
+    ]
+  },
+  {
+    "id": "portworx",
+    "label": "Portworx",
+    "cat": "storage",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "partner",
+    "docsUrl": "https://cloud.ibm.com/docs/containers?topic=containers-portworx",
+    "desc": "Partner SDS for IKS and ROKS, installable from the IBM Cloud catalog, with optional Key Protect volume encryption. HPCS is deprecated; new Portworx encryption should use Key Protect Standard or Dedicated.",
+    "value": "Bring this in when customers need RWX, replication, or Kubernetes-aware snapshots that Block Storage CSI does not cover.",
+    "questions": [
+      "Do stateful apps need SDS features beyond VPC block?",
+      "Is this IKS, ROKS, or both?",
+      "Should volume encryption keys live in Key Protect Standard or Dedicated?",
+      "Is Fusion a better OpenShift data-protection alternative, or ODF for Ceph SDS?"
+    ],
+    "competitors": [
+      "OpenShift Data Foundation",
+      "IBM Storage Fusion",
+      "VPC Block CSI only"
+    ],
+    "differentiators": [
+      "IBM Cloud catalog install against IKS/ROKS",
+      "Key Protect Standard or Dedicated for volume keys",
+      "Partner status, not an IBM-operated control plane"
+    ]
+  },
+  {
+    "id": "iam",
+    "label": "IAM / Trusted Profiles",
+    "cat": "security",
+    "plays": [
+      4
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/account?topic=account-iamoverview",
+    "desc": "Account identity, access groups, service-to-service authorizations, and trusted profiles used by every IBM Cloud hub and spoke.",
+    "value": "Nothing else in the map works without IAM. Trusted profiles are the preferred way Code Engine and cluster workloads call COS or other IBM Cloud APIs without long-lived API keys.",
+    "questions": [
+      "Are service IDs still using API keys where trusted profiles would work?",
+      "Do IKS/ROKS workers assume a trusted profile?",
+      "Are COS, Secrets Manager, and Key Protect authorized via IAM, not shared keys?",
+      "Is enterprise IAM / App ID in scope for users vs services?"
+    ],
+    "competitors": [
+      "AWS IAM",
+      "Azure Entra ID + RBAC",
+      "Local cluster service accounts only"
+    ],
+    "differentiators": [
+      "Single IAM plane across VPC and PowerVS",
+      "Trusted profiles for keyless workload identity",
+      "Identity, Access Groups, and Policy APIs are VPE-enabled"
+    ]
+  },
+  {
+    "id": "secrets_manager",
+    "label": "Secrets Manager",
+    "cat": "security",
+    "plays": [
+      4
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/secrets-manager",
+    "desc": "Central secrets and certificates with documented IBM Cloud authorizations: VPC load balancers, IKS/ROKS Ingress, Schematics, Continuous Delivery, Event Notifications, client-to-site VPN certificates, and Direct Link.",
+    "value": "Stop copying TLS material into kube-system, ALB listeners, VPN servers, and toolchains. Authorize the consuming service to SecretsReader.",
+    "questions": [
+      "Where do Ingress, ALB, and client-to-site VPN certificates live today?",
+      "Should Continuous Delivery and Schematics read secrets instead of variables?",
+      "Is Event Notifications connected for rotation?",
+      "Private-only endpoint, VPE, or both?"
+    ],
+    "competitors": [
+      "HashiCorp Vault",
+      "AWS Secrets Manager",
+      "Kubernetes Secrets only"
+    ],
+    "differentiators": [
+      "First-class IKS/ROKS Ingress and VPC ALB certificates",
+      "Client-to-site VPN server and client CA certificates",
+      "Event Notifications on secret lifecycle"
+    ]
+  },
+  {
+    "id": "key_protect",
+    "label": "Key Protect",
+    "cat": "security",
+    "plays": [
+      4
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/key-protect",
+    "desc": "IBM Cloud KMS for envelope encryption of COS, VPC volumes, cluster secrets, and landing-zone keys. Standard (multi-tenant, BYOK) covers most accounts. Dedicated (single-tenant, KYOK) is the successor to Hyper Protect Crypto Services.",
+    "value": "Default encryption conversation for VPC landing zones and IKS/ROKS. Use Dedicated when the customer required HPCS/KYOK or KMIP for VMware; do not open a new HPCS instance.",
+    "questions": [
+      "Who holds the root keys for COS, VPC volumes, and cluster secrets?",
+      "Is Key Protect Standard enough, or is Dedicated/KYOK required?",
+      "Are you migrating off a deprecated HPCS instance?",
+      "Should IKS/ROKS enable KMS at cluster create?"
+    ],
+    "competitors": [
+      "AWS KMS",
+      "Azure Key Vault",
+      "Deprecated Hyper Protect Crypto Services"
+    ],
+    "differentiators": [
+      "Landing-zone default KMS",
+      "Standard BYOK and Dedicated KYOK in one family",
+      "VPE for private key operations"
+    ]
+  },
+  {
+    "id": "hpcs",
+    "label": "Hyper Protect Crypto",
+    "cat": "security",
+    "plays": [
+      4
+    ],
+    "hub": false,
+    "status": "deprecated",
+    "docsUrl": "https://cloud.ibm.com/docs/hs-crypto?topic=hs-crypto-faqs-deprecation-of-ibm-cloud-hyper-protect-crypto-services",
+    "desc": "Deprecated Keep-Your-Own-Key HSM service. As of 28 March 2026 you cannot create new instances; remaining premium instances are supported until 28 March 2027 and then deleted. IBM is unifying BYOK/KYOK on Key Protect Dedicated.",
+    "value": "Do not lead HPCS on a new account. For KYOK and KMIP, migrate to Key Protect Dedicated where it is available, or multi-tenant Key Protect otherwise. CloudHSM/GREP11 and UKO move on-prem.",
+    "questions": [
+      "Is this an existing HPCS instance that must be migrated before 28 March 2027?",
+      "Is the use case CloudKMS/KMIP (Key Protect Dedicated) or CloudHSM/UKO (on-prem)?",
+      "Is Key Protect Dedicated available in the required region?",
+      "Have keys and KMIP clients been inventoried for the IBM migration tooling?"
+    ],
+    "competitors": [
+      "Key Protect Dedicated",
+      "AWS CloudHSM",
+      "Azure Dedicated HSM"
+    ],
+    "differentiators": [
+      "Deprecated \u2014 no new instances after 28 March 2026",
+      "Successor for KYOK/KMIP is Key Protect Dedicated",
+      "Existing instances only until 28 March 2027"
+    ]
+  },
+  {
+    "id": "cbr",
+    "label": "Context-Based Restrictions",
+    "cat": "security",
+    "plays": [
+      4
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/cbr",
+    "desc": "Account-level network and identity conditions that restrict which VPCs, IPs, or services can call a given IBM Cloud API.",
+    "value": "Control-plane guardrail on top of VPC security groups: even with credentials, Secrets Manager or COS can refuse calls from the wrong network.",
+    "questions": [
+      "Should platform APIs only be callable from the landing-zone VPCs?",
+      "Are you locking Schematics or Secrets Manager to known networks?",
+      "Is this an FS Cloud account?",
+      "Do you still need security groups and ACLs as well?"
+    ],
+    "competitors": [
+      "AWS SCP + VPC endpoints policy",
+      "Azure management locks / Private Link",
+      "Security groups alone"
+    ],
+    "differentiators": [
+      "Applies to IBM Cloud service APIs, not just data plane",
+      "Zones can name VPCs, services, and IP ranges",
+      "CBR APIs are VPE-enabled for private-only accounts"
+    ]
+  },
+  {
+    "id": "app_id",
+    "label": "App ID",
+    "cat": "security",
+    "plays": [
+      4
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/appid",
+    "desc": "User authentication for applications, including an IKS Ingress annotation that fronts cluster apps with App ID login.",
+    "value": "Application identity, not account IAM. Use it when IKS/ROKS apps need user login without standing up a custom IdP.",
+    "questions": [
+      "Do cluster apps need end-user login, not just IAM for operators?",
+      "Can Ingress annotations handle this, or do you need an app-level SDK?",
+      "Is IBM Security Verify already in the account?",
+      "Social login, Cloud Directory, or enterprise SAML?"
+    ],
+    "competitors": [
+      "Auth0",
+      "Amazon Cognito",
+      "IBM Security Verify"
+    ],
+    "differentiators": [
+      "IKS Ingress authentication annotation",
+      "IBM Cloud catalog, IAM-integrated",
+      "Optional rather than a cluster default"
+    ]
+  },
+  {
+    "id": "monitoring",
+    "label": "IBM Cloud Monitoring",
+    "cat": "observability",
+    "plays": [
+      5
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/monitoring",
+    "desc": "Metrics platform with agents for IKS/ROKS workers and integrations for VPC, File Storage, COS buckets, and other platform services.",
+    "value": "Default metrics conversation for containers and VSIs on IBM Cloud when Instana is not already the standard.",
+    "questions": [
+      "How do you watch worker and pod metrics today?",
+      "Is Instana already covering this estate?",
+      "Do you need IBM Cloud Monitoring agents on IKS/ROKS?",
+      "Are PowerVS metrics in a different tool?"
+    ],
+    "competitors": [
+      "Datadog",
+      "Instana",
+      "Prometheus only"
+    ],
+    "differentiators": [
+      "Documented IKS/ROKS agent install",
+      "IBM Cloud IAM and catalog",
+      "Pairs with IBM Cloud Logs"
+    ]
+  },
+  {
+    "id": "logs",
+    "label": "IBM Cloud Logs",
+    "cat": "observability",
+    "plays": [
+      5
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/cloud-logs",
+    "desc": "Log platform that replaced Log Analysis / Activity Tracker branding for cluster logs and account audit. COS bucket management, read, and write events arrive here through Activity Tracker Event Routing. Landing zones still ship VPC Flow Logs to COS.",
+    "value": "One name for cluster logs and platform audit. Do not sell Activity Tracker as a separate first-run node.",
+    "questions": [
+      "Where do IKS/ROKS container logs go today?",
+      "Do you still have an Activity Tracker instance to migrate?",
+      "Should VPC Flow Logs stay on COS even if app logs are here?",
+      "Should COS bucket access events route here via Activity Tracker Event Routing?",
+      "Private VPE to the logs instance?"
+    ],
+    "competitors": [
+      "Datadog Logs",
+      "Splunk",
+      "ELK self-managed"
+    ],
+    "differentiators": [
+      "Official IKS/ROKS logging agent",
+      "VPE-enabled",
+      "Absorbs the old Activity Tracker use case"
+    ]
+  },
+  {
+    "id": "event_notifications",
+    "label": "Event Notifications",
+    "cat": "observability",
+    "plays": [
+      5
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/event-notifications?topic=event-notifications-en-about",
+    "desc": "Routing service for IBM Cloud events. Sources on this map include Monitoring, Logs, Secrets Manager, Toolchain, and Backup for VPC. Destinations include email/SMS, webhooks, Code Engine, and Cloud Object Storage.",
+    "value": "One fan-out bus: do not wire every platform service to its own email list. Filter sources into topics, then subscribe people or automations.",
+    "questions": [
+      "Which IBM Cloud sources should land here: Monitoring, Logs, Secrets Manager, Toolchain, Backup?",
+      "Are destinations people (email/SMS) or services (Code Engine, COS, webhook)?",
+      "Is Secrets Manager already connected so rotation events page someone?",
+      "Do you need a VPE to the Event Notifications instance?"
+    ],
+    "competitors": [
+      "PagerDuty",
+      "AWS SNS / EventBridge",
+      "Custom webhooks"
+    ],
+    "differentiators": [
+      "IBM Cloud sources register in-account; no custom producer for those services",
+      "Fan-out from one topic to many destinations",
+      "VPE-enabled; Code Engine and COS are first-class service destinations"
+    ]
+  },
+  {
+    "id": "schematics",
+    "label": "Schematics",
+    "cat": "observability",
+    "plays": [
+      5
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/schematics",
+    "desc": "Terraform-as-a-service for IBM Cloud, including VPC landing zones and IKS/ROKS cluster create. Can pull secrets from Secrets Manager.",
+    "value": "Default IaC conversation: do not start a VPC, IKS, or PowerVS adjacency by clicking every resource by hand.",
+    "questions": [
+      "Are you deploying the IBM landing-zone Terraform module?",
+      "Should workspaces read Secrets Manager rather than variables?",
+      "Is native Terraform CLI preferred over Schematics?",
+      "CBR to allow only Schematics to touch Secrets Manager?"
+    ],
+    "competitors": [
+      "Terraform Cloud",
+      "AWS CloudFormation",
+      "Ansible only"
+    ],
+    "differentiators": [
+      "IBM-hosted Terraform with IBM provider",
+      "Landing-zone catalog architectures",
+      "VPE-enabled; Secrets Manager workspace secrets"
+    ]
+  },
+  {
+    "id": "continuous_delivery",
+    "label": "Continuous Delivery",
+    "cat": "observability",
+    "plays": [
+      5
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/ContinuousDelivery",
+    "desc": "IBM Cloud toolchains and Tekton pipelines that build images and deploy to IKS, ROKS, or Code Engine.",
+    "value": "Platform CI/CD when the customer does not already standardize on GitHub Actions or Jenkins.",
+    "questions": [
+      "Where do container images get built and promoted?",
+      "Is the target IKS, ROKS, or Code Engine?",
+      "Do pipelines need IBM Cloud IAM rather than a kubeconfig?",
+      "Is a third-party CI already non-negotiable?"
+    ],
+    "competitors": [
+      "GitHub Actions",
+      "GitLab CI",
+      "Jenkins / Tekton elsewhere"
+    ],
+    "differentiators": [
+      "Documented IKS/ROKS toolchain path",
+      "IBM Cloud IAM for deploy",
+      "Works with Container Registry"
+    ]
+  },
+  {
+    "id": "container_registry",
+    "label": "Container Registry",
+    "cat": "observability",
+    "plays": [
+      5
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/registry",
+    "desc": "Private IBM Cloud image registry used by IKS, ROKS, and Code Engine, with VPE and Vulnerability Advisor.",
+    "value": "Default image source for all three container hubs. Pulling only from Docker Hub is a finding, not a design.",
+    "questions": [
+      "Where are production images stored?",
+      "Do IKS, ROKS, and Code Engine share one registry namespace?",
+      "Is a VPE required for private pulls?",
+      "Are images scanned in-registry?"
+    ],
+    "competitors": [
+      "Docker Hub",
+      "Amazon ECR",
+      "Quay / OpenShift internal registry"
+    ],
+    "differentiators": [
+      "Native pull for IKS, ROKS, and Code Engine",
+      "VPE-enabled",
+      "Vulnerability Advisor on IBM Cloud"
+    ]
+  }
+]

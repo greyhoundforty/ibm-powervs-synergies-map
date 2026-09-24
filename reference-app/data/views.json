@@ -1,0 +1,23 @@
+{
+  "default": "iaas",
+  "views": [
+    {
+      "id": "iaas",
+      "label": "Infrastructure",
+      "hint": "VPC \u00b7 Containers \u00b7 PowerVS",
+      "path": "data/iaas"
+    },
+    {
+      "id": "data-ai",
+      "label": "Data & AI",
+      "hint": "IaaS overlay",
+      "path": "data/data-ai"
+    },
+    {
+      "id": "automation",
+      "label": "Automation",
+      "hint": "IaaS overlay",
+      "path": "data/automation"
+    }
+  ]
+}

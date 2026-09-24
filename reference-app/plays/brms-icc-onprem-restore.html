@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BRMS + ICC · backup to COS, restore on-prem</title>
+  <style>
+    :root {
+      --bg: #161616;
+      --layer: #262626;
+      --layer-02: #393939;
+      --border: #525252;
+      --text: #f4f4f4;
+      --muted: #c6c6c6;
+      --helper: #8d8d8d;
+      --blue: #4589ff;
+      --teal: #3ddbd9;
+      --magenta: #ff7eb6;
+      --orange: #ffb784;
+      --green: #42be65;
+      --red: #fa4d56;
+      --on-color: #161616;
+    }
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --layer: #f4f4f4;
+      --layer-02: #e0e0e0;
+      --border: #8d8d8d;
+      --text: #161616;
+      --muted: #525252;
+      --helper: #6f6f6f;
+      --blue: #0043ce;
+      --teal: #007d79;
+      --magenta: #d12771;
+      --orange: #8a3800;
+      --green: #198038;
+      --red: #da1e28;
+      --on-color: #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: "IBM Plex Sans", "Helvetica Neue", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 16px 24px 12px;
+      border-bottom: 1px solid var(--layer-02);
+    }
+    .kicker { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--helper); }
+    h1 { font-size: 22px; font-weight: 600; margin: 4px 0 8px; }
+    .lede { font-size: 14px; color: var(--muted); max-width: 1040px; line-height: 1.45; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 24px;
+      border-bottom: 1px solid var(--layer-02);
+    }
+    .toolbar span { font-size: 12px; color: var(--helper); margin-right: 4px; }
+    button {
+      font: inherit;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    button.is-on { background: var(--blue); color: var(--on-color); border-color: var(--blue); }
+    button[data-flow="backup"].is-on { background: var(--teal); border-color: var(--teal); color: var(--on-color); }
+    button[data-flow="restore-pull"].is-on,
+    button[data-flow="restore"].is-on { background: var(--blue); }
+    button[data-flow="restore-nfs"].is-on { background: var(--magenta); border-color: var(--magenta); color: var(--on-color); }
+    button[data-flow="restore-remain"].is-on { background: var(--orange); border-color: var(--orange); color: var(--on-color); }
+    .main { flex: 1; display: grid; grid-template-columns: 1fr 340px; min-height: 0; }
+    .diagram { padding: 16px 16px 8px; overflow: auto; }
+    svg { width: 100%; height: auto; display: block; min-width: 1080px; }
+    .notes {
+      border-left: 1px solid var(--layer-02);
+      padding: 16px 18px 24px;
+      overflow: auto;
+      background: var(--layer);
+    }
+    .notes h2 { font-size: 14px; margin-bottom: 8px; }
+    .notes ol, .notes ul { padding-left: 18px; font-size: 13px; line-height: 1.5; color: var(--muted); }
+    .notes li { margin: 6px 0; }
+    .notes p { font-size: 13px; line-height: 1.5; color: var(--muted); margin-bottom: 10px; }
+    .notes code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 14px 18px;
+      padding: 8px 24px 14px;
+      font-size: 12px; color: var(--muted);
+      border-top: 1px solid var(--layer-02);
+    }
+    .swatch { display: inline-block; width: 22px; height: 3px; margin-right: 6px; vertical-align: middle; }
+    .swatch.dash { border-top: 2px dashed var(--helper); height: 0; width: 22px; }
+    a { color: var(--blue); }
+    .zone { fill: var(--layer); stroke: var(--layer-02); }
+    .node { fill: var(--bg); stroke: var(--border); }
+    .node-title { fill: var(--text); font-size: 13px; font-weight: 600; font-family: inherit; }
+    .node-sub { fill: var(--helper); font-size: 11px; font-family: inherit; }
+    .zone-title { fill: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; font-family: inherit; }
+    .zone-flag { font-size: 10px; letter-spacing: 0.08em; font-family: inherit; }
+    .exposed { fill: var(--orange); }
+    .hidden { fill: var(--helper); }
+    .flow { fill: none; stroke-width: 2.5; marker-end: url(#arrow); }
+    .flow.backup { stroke: var(--teal); }
+    .flow.restore-pull { stroke: var(--blue); }
+    .flow.restore-nfs { stroke: var(--magenta); }
+    .flow.restore-remain { stroke: var(--orange); }
+    .flow.deny { stroke: var(--red); stroke-dasharray: 5 4; marker-end: url(#arrow-deny); }
+    .ctrl { fill: none; stroke: var(--helper); stroke-width: 1.5; stroke-dasharray: 4 4; marker-end: url(#arrow-ctrl); }
+    .lbl {
+      font-size: 11px;
+      font-weight: 600;
+      font-family: inherit;
+      paint-order: stroke fill;
+      stroke: var(--layer);
+      stroke-width: 5px;
+      stroke-linejoin: round;
+    }
+    .dim [data-group] .flow,
+    .dim [data-group] .lbl { opacity: 0.12; }
+    .dim [data-group].show .flow,
+    .dim [data-group].show .lbl { opacity: 1; }
+    body.hide-ctrl .ctrl,
+    body.hide-ctrl .ctrl-lbl { display: none; }
+    footer { padding: 8px 24px 12px; font-size: 12px; color: var(--helper); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="kicker">IBM Cloud · on-prem restore option</div>
+    <h1>BRMS + ICC backup to COS, restore back on-prem</h1>
+    <p class="lede">Same save path as the cloud-DR play. Full-system recovery still cannot IPL from Cloud Object Storage. A running on-prem helper pulls QCLDBIPL volumes, then a staging LPAR network-installs from NFS (or you burn those volumes to optical). PowerVS and Transit Gateway are not on this path.</p>
+  </header>
+
+  <div class="toolbar">
+    <span>Highlight</span>
+    <button type="button" data-flow="all" class="is-on">All flows</button>
+    <button type="button" data-flow="backup">1 · On-prem backup</button>
+    <button type="button" data-flow="restore">2 · On-prem restore</button>
+    <button type="button" data-flow="restore-pull">2a · Pull IPL media</button>
+    <button type="button" data-flow="restore-nfs">2b · NFS / optical install</button>
+    <button type="button" data-flow="restore-remain">2c · Remaining COS restore</button>
+    <button type="button" id="ctrl-btn" class="is-on">Control plane</button>
+    <button type="button" id="theme-btn">Theme</button>
+    <a href="./brms-icc-dr-traffic.html">Cloud restore (PowerVS)</a>
+    <a href="../docs/brms-icc/backup-onprem-to-cos.md">Backup guide</a>
+    <a href="../docs/brms-icc/restore-cos-to-onprem.md">Restore guide</a>
+  </div>
+
+  <div class="main">
+    <section class="diagram" aria-label="On-prem restore network overview">
+      <svg viewBox="0 0 1280 620" role="img">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/>
+          </marker>
+          <marker id="arrow-deny" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#fa4d56"/>
+          </marker>
+          <marker id="arrow-ctrl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#8d8d8d"/>
+          </marker>
+        </defs>
+
+        <rect class="zone" x="16" y="36" width="400" height="548" rx="4"/>
+        <text class="zone-title" x="32" y="58">ON-PREM</text>
+        <text class="zone-flag hidden" x="300" y="58">NOT EXPOSED</text>
+
+        <rect class="zone" x="432" y="36" width="140" height="548" rx="4"/>
+        <text class="zone-title" x="448" y="58">INTERNET</text>
+        <text class="zone-flag exposed" x="448" y="74">IKE / NAT-T ONLY</text>
+
+        <rect class="zone" x="588" y="36" width="360" height="548" rx="4"/>
+        <text class="zone-title" x="604" y="58">IBM CLOUD VPC</text>
+        <text class="zone-flag hidden" x="820" y="58">NOT EXPOSED*</text>
+
+        <rect class="zone" x="964" y="36" width="300" height="548" rx="4"/>
+        <text class="zone-title" x="980" y="58">OBJECT STORE</text>
+        <text class="zone-flag hidden" x="980" y="74">NOT EXPOSED</text>
+
+        <rect class="node" x="36" y="120" width="180" height="76" rx="3"/>
+        <text class="node-title" x="50" y="146">Production IBM i</text>
+        <text class="node-sub" x="50" y="166">BRMS + ICC save source</text>
+        <text class="node-sub" x="50" y="184">QCLDBSYS then QCLDBIPL</text>
+
+        <rect class="node" x="232" y="120" width="168" height="76" rx="3"/>
+        <text class="node-title" x="246" y="146">NFS helper LPAR</text>
+        <text class="node-sub" x="246" y="166">Running IBM i + ICC</text>
+        <text class="node-sub" x="246" y="184">CPYFRMCLD QCLDBIPL</text>
+
+        <rect class="node" x="36" y="248" width="180" height="64" rx="3"/>
+        <text class="node-title" x="50" y="274">On-prem VPN</text>
+        <text class="node-sub" x="50" y="294">Customer IPsec peer</text>
+
+        <rect class="node" x="232" y="380" width="168" height="86" rx="3"/>
+        <text class="node-title" x="246" y="406">Staging LPAR</text>
+        <text class="node-sub" x="246" y="426">Empty / rebuilt partition</text>
+        <text class="node-sub" x="246" y="444">NFS net install, then ICC</text>
+
+        <rect class="node" x="36" y="400" width="180" height="64" rx="3"/>
+        <text class="node-title" x="50" y="426">Optical / DVD alt</text>
+        <text class="node-sub" x="50" y="446">Burn QCLDBIPL instead of NFS</text>
+
+        <rect class="node" x="448" y="168" width="108" height="76" rx="3" stroke="#ffb784"/>
+        <text class="node-title" x="460" y="196">IPsec</text>
+        <text class="node-sub" x="460" y="214">UDP 500/4500</text>
+        <text class="node-sub" x="460" y="230">ESP · EXPOSED</text>
+
+        <rect class="node" x="448" y="430" width="108" height="64" rx="3" stroke="#fa4d56"/>
+        <text class="node-title" x="460" y="456">Public COS</text>
+        <text class="node-sub" x="460" y="476">Do not use</text>
+
+        <rect class="node" x="608" y="120" width="150" height="76" rx="3" stroke="#ffb784"/>
+        <text class="node-title" x="622" y="146">VPC VPN GW</text>
+        <text class="node-sub" x="622" y="166">Site-to-site</text>
+        <text class="node-sub" x="622" y="184">Public IKE IPs*</text>
+
+        <rect class="node" x="608" y="248" width="150" height="64" rx="3"/>
+        <text class="node-title" x="622" y="274">VPC</text>
+        <text class="node-sub" x="622" y="294">Route table</text>
+
+        <rect class="node" x="780" y="248" width="150" height="64" rx="3"/>
+        <text class="node-title" x="794" y="274">COS VPE</text>
+        <text class="node-sub" x="794" y="294">Reserved IP · tcp/443</text>
+
+        <rect class="node" x="990" y="236" width="250" height="88" rx="3"/>
+        <text class="node-title" x="1004" y="262">COS bucket</text>
+        <text class="node-sub" x="1004" y="282">BRMS virtual volumes</text>
+        <text class="node-sub" x="1004" y="300">QBRMS_&lt;system&gt; · not a VTL appliance</text>
+
+        <g data-group="backup">
+          <path class="flow backup" d="M 126 196 V 248"/>
+          <path class="flow backup" d="M 216 280 C 250 280, 280 220, 448 206"/>
+          <path class="flow backup" d="M 556 206 H 608"/>
+          <path class="flow backup" d="M 683 196 V 248"/>
+          <path class="flow backup" d="M 758 280 H 780"/>
+          <path class="flow backup" d="M 930 280 H 990"/>
+          <text class="lbl" fill="#3ddbd9" x="1004" y="220">ALLOW tcp/443 ICC</text>
+        </g>
+
+        <g data-group="restore-pull">
+          <path class="flow restore-pull" d="M 232 158 H 200 V 248"/>
+          <path class="flow restore-pull" d="M 216 292 C 300 292, 500 292, 780 292"/>
+          <path class="flow restore-pull" d="M 930 292 H 990"/>
+          <text class="lbl" fill="#4589ff" x="432" y="278">ALLOW 443 CPYFRMCLD</text>
+        </g>
+
+        <g data-group="restore-nfs">
+          <path class="flow restore-nfs" d="M 340 196 V 380"/>
+          <text class="lbl" fill="#ff7eb6" x="348" y="300">ALLOW NFS</text>
+          <path class="flow restore-nfs" d="M 216 410 H 232"/>
+          <text class="lbl" fill="#ff7eb6" x="50" y="478">or burn optical</text>
+        </g>
+
+        <g data-group="restore-remain">
+          <path class="flow restore-remain" d="M 316 466 V 500 H 855 V 312"/>
+          <path class="flow restore-remain" d="M 930 312 H 990"/>
+          <text class="lbl" fill="#ffb784" x="500" y="492">ALLOW 443 after ICC</text>
+        </g>
+
+        <g data-group="deny">
+          <path class="flow deny" d="M 126 196 C 80 280, 80 430, 448 462"/>
+          <text class="lbl deny" x="24" y="340">DENY public COS</text>
+          <path class="flow deny" d="M 400 466 H 420 V 530 H 448"/>
+          <text class="lbl deny" x="250" y="548">DENY IPL from COS</text>
+        </g>
+
+        <g class="ctrl-layer">
+          <path class="ctrl" d="M 640 196 V 248"/>
+          <text class="lbl ctrl-lbl" fill="#8d8d8d" x="608" y="108">RT: VPN CIDRs</text>
+          <path class="ctrl" d="M 855 248 V 112 H 990"/>
+          <text class="lbl ctrl-lbl" fill="#8d8d8d" x="780" y="108">DNS: COS name → VPE IP</text>
+        </g>
+      </svg>
+    </section>
+
+    <aside class="notes" id="notes">
+      <h2>Is the NFS + staging model right?</h2>
+      <p>Yes for a <strong>full-system</strong> restore. IBM i cannot D-mode IPL from COS. A running helper must land the QCLDBIPL optical first, then the staging LPAR installs from NFS or DVD. After BRMS, TCP, and ICC are back, the staging LPAR pulls the rest from COS over the same VPN + VPE path.</p>
+      <ol>
+        <li><strong>Keep the helper on-prem.</strong> Do not NFS-install across the VPN from PowerVS. D-mode over IPsec is slow and fragile.</li>
+        <li><strong>Chicken and egg.</strong> If production is dead, you still need a second running IBM i (or a PC that downloads QCLDBIPL and burns optical). The staging LPAR cannot pull from COS until ICC exists on it.</li>
+        <li><strong>These are BRMS virtual volumes</strong> in a COS bucket (QBRMS_&lt;system&gt;), not a FalconStor / physical VTL. Same ICC objects either way.</li>
+        <li><strong>Object-level restore is simpler.</strong> A still-running IBM i can CPYFRMCLD / RSTLIBBRM from COS with no NFS helper.</li>
+        <li><strong>No PowerVS, no TGW</strong> on this option. Cloud is only the object store.</li>
+      </ol>
+    </aside>
+  </div>
+
+  <div class="legend">
+    <span><i class="swatch" style="background:var(--teal)"></i>Backup · ICC HTTPS</span>
+    <span><i class="swatch" style="background:var(--blue)"></i>Restore pull · CPYFRMCLD</span>
+    <span><i class="swatch" style="background:var(--magenta)"></i>NFS or DVD install</span>
+    <span><i class="swatch" style="background:var(--orange)"></i>Remaining COS restore</span>
+    <span><i class="swatch" style="background:var(--red)"></i>DENY</span>
+    <span><i class="swatch dash"></i>Control plane</span>
+    <span>* Only the VPC VPN gateway public IPs are exposed.</span>
+  </div>
+  <footer>
+    Sources: IBM i 7.4 restoring data from the cloud (optical install media before BRMS can use COS) · PowerVS IBM i Backups Tutorial NFS method, applied on-prem · VPC VPN and COS VPE. No Transit Gateway on this option.
+  </footer>
+
+  <script>
+    const notes = {
+      all: `<h2>Is the NFS + staging model right?</h2><p>Yes for a <strong>full-system</strong> restore. IBM i cannot D-mode IPL from COS. A running helper must land the QCLDBIPL optical first, then the staging LPAR installs from NFS or DVD. After BRMS, TCP, and ICC are back, the staging LPAR pulls the rest from COS over the same VPN + VPE path.</p><ol><li><strong>Keep the helper on-prem.</strong> Do not NFS-install across the VPN from PowerVS. D-mode over IPsec is slow and fragile.</li><li><strong>Chicken and egg.</strong> If production is dead, you still need a second running IBM i (or a PC that downloads QCLDBIPL and burns optical). The staging LPAR cannot pull from COS until ICC exists on it.</li><li><strong>These are BRMS virtual volumes</strong> in a COS bucket (QBRMS_&lt;system&gt;), not a FalconStor / physical VTL. Same ICC objects either way.</li><li><strong>Object-level restore is simpler.</strong> A still-running IBM i can CPYFRMCLD / RSTLIBBRM from COS with no NFS helper.</li><li><strong>No PowerVS, no TGW</strong> on this option. Cloud is only the object store.</li></ol>`,
+      backup: `<h2>1 · On-prem backup</h2><p>Unchanged from the cloud-DR play. PowerVS is not involved.</p><ol><li>Restricted-state save, in order: <code>STRBKUBRM CTLGRP(QCLDBSYS01)</code> then <code>STRBKUBRM CTLGRP(QCLDBIPL01)</code>.</li><li>ICC copies virtual volumes to COS. Path: production IBM i → on-prem VPN → IPsec → VPC VPN GW → VPC → COS VPE :443 → bucket.</li><li>CRTS3RICC URI is the COS private/direct endpoint, HMAC keys from COS, DNS or host table to the VPE IP.</li></ol><p>VPN interesting traffic = IBM i subnets ↔ VPE subnet. DENY the public COS endpoint.</p>`,
+      restore: `<h2>2 · On-prem restore</h2><p>Same three hops as PowerVS, but the helper and the target stay on the customer LAN.</p><ol><li><strong>2a Pull:</strong> NFS helper (a running IBM i with ICC) CPYFRMCLD of QCLDBIPL volumes from COS through the VPN + VPE.</li><li><strong>2b Install:</strong> NFS-export the image catalog to the staging LPAR, or burn those volumes to DVD/optical (the path IBM documents for on-prem). Staging cannot be the COS client yet.</li><li><strong>2c Remainder:</strong> After LIC, OS, BRMS, TCP, and ICC exist on staging, STRRCYBRM pulls QCLDBSYS* from COS on the same VPE path.</li></ol><p>Helper disk ≈ IPL image set. Staging disk ≈ full system. Helper and staging must ping each other on-prem.</p>`,
+      "restore-pull": `<h2>2a · Pull IPL media</h2><p>Entry point is the helper, not the dead production LPAR and not the empty staging LPAR.</p><ol><li>Helper needs 5770-BR1 / 5733-ICC or at least ICC + enough IFS space for the QCLDBIPL optical set.</li><li>CPYFRMCLD from the ICC resource (objects under QBRMS_&lt;source-system&gt;).</li><li>Data path ALLOW: helper → on-prem VPN → IPsec → VPC VPN → VPC → COS VPE :443 → bucket.</li><li>If the only surviving box is a PC, download the QCLDBIPL files and burn optical instead of using an IBM i helper.</li></ol>`,
+      "restore-nfs": `<h2>2b · NFS or optical install</h2><p>East-west on-prem only. Do not run this hop over the VPN.</p><ol><li>NFS path: CRTDEVOPT, CRTIMGCLG, ADDIMGCLGE, VFYIMGCLG TYPE(*LIC) NFSSHR(*YES), STRNFSSVR, CHGNFSEXP. Staging CRTDEVOPT 632B-003 pointed at the helper IP, then STRNETINS.</li><li>Optical path (IBM’s on-prem write-up): add <code>.iso</code> if needed, burn the QCLDBIPL volumes, IPL from DVD. Same result: LIC + OS + BRMS + ICC on staging.</li><li>ALLOW NFS between helper and staging. DENY any attempt to IPL staging from COS.</li></ol>`,
+      "restore-remain": `<h2>2c · Remaining COS restore</h2><p>Once ICC is on the staging LPAR, BRMS can use the cloud location directly.</p><ol><li>Follow the BRMS recovery report. Register cloud volumes. Start TCP on the staging interface that can reach the VPE.</li><li>STRRCYBRM downloads QCLDBSYS* through VPN + VPE. ALLOW 443 from staging after ICC is configured.</li><li>Until that point staging has no ICC, so it cannot be the COS client — that is why the helper exists.</li></ol>`
+    };
+    const diagram = document.querySelector(".diagram");
+    const buttons = document.querySelectorAll("[data-flow]");
+    function setFlow(id) {
+      buttons.forEach((b) => b.classList.toggle("is-on", b.dataset.flow === id));
+      diagram.classList.toggle("dim", id !== "all");
+      document.querySelectorAll("[data-group]").forEach((g) => {
+        const restore = id === "restore" && (g.dataset.group.startsWith("restore") || g.dataset.group === "deny");
+        const backup = id === "backup" && (g.dataset.group === "backup" || g.dataset.group === "deny");
+        const match = id === "all" || g.dataset.group === id || restore || backup;
+        g.classList.toggle("show", id !== "all" && match);
+      });
+      document.getElementById("notes").innerHTML = notes[id] || notes.all;
+    }
+    buttons.forEach((b) => b.addEventListener("click", () => setFlow(b.dataset.flow)));
+    document.getElementById("ctrl-btn").addEventListener("click", (e) => {
+      e.currentTarget.classList.toggle("is-on");
+      document.body.classList.toggle("hide-ctrl", !e.currentTarget.classList.contains("is-on"));
+    });
+    document.getElementById("theme-btn").addEventListener("click", () => {
+      const root = document.documentElement;
+      root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+    });
+  </script>
+</body>
+</html>

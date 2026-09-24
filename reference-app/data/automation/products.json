@@ -1,0 +1,639 @@
+[
+  {
+    "id": "vpc",
+    "label": "IBM Cloud VPC",
+    "cat": "iaas",
+    "plays": [
+      0
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/vpc",
+    "desc": "Software-defined private network for virtual servers, load balancers, and attached IBM Cloud services. Full IaaS mapping lives on the Infrastructure view.",
+    "value": "The x86 landing zone. Automation and Data & AI products attach here rather than replacing VPC.",
+    "questions": [
+      "Is this a new VPC landing zone, or an existing one that Automation tools should manage?",
+      "Do HashiCorp, NS1, or SevOne need to see this VPC's subnets and flow logs?",
+      "Are IKS or ROKS clusters going to land on these subnets?",
+      "Click a hub to see only this view's tie-ins, not the full Infrastructure map."
+    ],
+    "competitors": [
+      "Amazon VPC",
+      "Azure Virtual Network",
+      "Google Cloud VPC"
+    ],
+    "differentiators": [
+      "Native home for IKS and ROKS workers",
+      "Transit Gateway to PowerVS",
+      "VPE fabric for platform services"
+    ]
+  },
+  {
+    "id": "iks",
+    "label": "IBM Kubernetes Service",
+    "cat": "iaas",
+    "plays": [
+      0
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/containers",
+    "desc": "Managed Kubernetes on IBM Cloud VPC. Full IaaS mapping lives on the Infrastructure view.",
+    "value": "The upstream Kubernetes cluster that HashiCorp Vault, NS1 ExternalDNS, Verify, Concert, and SevOne attach to.",
+    "questions": [
+      "Is this IKS on VPC rather than classic?",
+      "Do they want Vault CSI/ESO/VSO on the cluster?",
+      "Should Ingress hostnames publish to NS1 via ExternalDNS?",
+      "Click a hub to see only this view's tie-ins, not the full Infrastructure map."
+    ],
+    "competitors": [
+      "Amazon EKS",
+      "Azure Kubernetes Service",
+      "Google Kubernetes Engine"
+    ],
+    "differentiators": [
+      "IBM-operated control plane",
+      "VPC-native workers",
+      "Catalog integrations for IAM, Registry, and Logs"
+    ]
+  },
+  {
+    "id": "roks",
+    "label": "Red Hat OpenShift",
+    "cat": "iaas",
+    "plays": [
+      0
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/openshift",
+    "desc": "Managed OpenShift on IBM Cloud VPC. Full IaaS mapping lives on the Infrastructure view.",
+    "value": "Use when Operators, Routes, or Red Hat catalog content (Verify Access, External DNS Operator) are the cluster standard.",
+    "questions": [
+      "Is OpenShift already the container platform standard?",
+      "Do they need the certified Verify Access operator from the Red Hat catalog?",
+      "Should Routes as well as Ingress publish to NS1?",
+      "Click a hub to see only this view's tie-ins, not the full Infrastructure map."
+    ],
+    "competitors": [
+      "Red Hat OpenShift on AWS (ROSA)",
+      "Azure Red Hat OpenShift",
+      "Self-managed OpenShift"
+    ],
+    "differentiators": [
+      "IBM-managed OpenShift on VPC",
+      "Red Hat Operator catalog",
+      "Routes plus Ingress"
+    ]
+  },
+  {
+    "id": "code_engine",
+    "label": "IBM Cloud Code Engine",
+    "cat": "iaas",
+    "plays": [
+      0
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/codeengine",
+    "desc": "Managed serverless containers, jobs, and functions in IBM-managed VPC. Full IaaS mapping lives on the Infrastructure view.",
+    "value": "Terraform can stand up Code Engine projects. Cluster-only tools (Vault CSI, ExternalDNS, Verify Access operator) do not attach here.",
+    "questions": [
+      "Do you want containers without managing a cluster?",
+      "Should Terraform own the Code Engine project?",
+      "Is this actually an IKS/ROKS workload?",
+      "Click a hub to see only this view's tie-ins, not the full Infrastructure map."
+    ],
+    "competitors": [
+      "AWS Fargate / Lambda",
+      "Azure Container Apps",
+      "Google Cloud Run"
+    ],
+    "differentiators": [
+      "No cluster operations",
+      "Terraform-manageable",
+      "Not a Kubernetes operator target"
+    ]
+  },
+  {
+    "id": "powervs",
+    "label": "IBM Power Virtual Server",
+    "cat": "iaas",
+    "plays": [
+      0
+    ],
+    "hub": true,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas",
+    "desc": "AIX, IBM i, and Linux on Power. Full IaaS mapping lives on the Infrastructure view.",
+    "value": "Terraform, NS1 traffic steering, and SevOne flow follow the same Transit Gateway path as VPC. Vault CSI and cluster operators do not apply.",
+    "questions": [
+      "Are AIX, IBM i, or Linux on Power workloads in this account?",
+      "Should Terraform own the workspace and TGW attachment?",
+      "Do NS1 or SevOne need the same multi-region and flow-log story as VPC?",
+      "Click a hub to see only this view's tie-ins, not the full Infrastructure map."
+    ],
+    "competitors": [
+      "On-premises Power Systems",
+      "Oracle Cloud Power",
+      "x86 rehost / rewrite"
+    ],
+    "differentiators": [
+      "Native AIX and IBM i",
+      "PER plus Transit Gateway",
+      "Same account as VPC"
+    ]
+  },
+  {
+    "id": "jsphere",
+    "label": "JSphere Suite for Java",
+    "cat": "app_dev",
+    "plays": [
+      1
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/jsphere",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "webmethods",
+    "label": "webMethods Hybrid Integration",
+    "cat": "app_integ",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/webmethods-hybrid-integration",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "api_connect",
+    "label": "API Connect",
+    "cat": "app_integ",
+    "plays": [
+      2
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/api-connect",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "terraform",
+    "label": "Terraform",
+    "cat": "infra_lc",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs",
+    "desc": "HashiCorp Terraform with the IBM Cloud provider. Manages VPC, IKS, ROKS, Code Engine, and PowerVS as code, including landing-zone modules.",
+    "value": "Default IaC conversation on every IaaS hub. Do not click a VPC, cluster, or Power workspace together by hand if Terraform is in the account.",
+    "questions": [
+      "Should IBM Cloud resources be created with Terraform rather than the console?",
+      "Are they already using Schematics, or is this CLI/TFC Terraform?",
+      "Does the same workspace cover VPC plus IKS/ROKS or PowerVS?"
+    ],
+    "competitors": [
+      "AWS CloudFormation",
+      "Azure Bicep / ARM",
+      "Pulumi"
+    ],
+    "differentiators": [
+      "IBM Cloud provider covers VPC, containers, and PowerVS",
+      "Same language as Vault, Packer, and Boundary",
+      "NS1 also has a first-class Terraform provider"
+    ]
+  },
+  {
+    "id": "packer",
+    "label": "Packer",
+    "cat": "infra_lc",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://developer.hashicorp.com/packer/integrations/hashicorp/ibmcloud",
+    "desc": "HashiCorp Packer with the IBM Cloud builder. Bakes VPC custom images for virtual server instances.",
+    "value": "Image factory for VPC VSIs. Pair with Terraform so instances launch from a known golden image instead of cloud-init sprawl.",
+    "questions": [
+      "Are VPC VSIs launched from a golden image today?",
+      "Should Packer own the image pipeline that Terraform then consumes?",
+      "Is this VPC only, or are they also baking for classic?"
+    ],
+    "competitors": [
+      "EC2 Image Builder",
+      "Azure Image Builder",
+      "DIY qemu/kickstart"
+    ],
+    "differentiators": [
+      "IBM Cloud Packer builder for VPC images",
+      "Fits the Terraform/Vault HashiCorp stack",
+      "Does not replace IKS/ROKS image streams"
+    ]
+  },
+  {
+    "id": "nomad",
+    "label": "Nomad",
+    "cat": "infra_lc",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/hashicorp",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "consul",
+    "label": "Consul",
+    "cat": "infra_lc",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/hashicorp",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "vault",
+    "label": "Vault",
+    "cat": "infra_lc",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://developer.hashicorp.com/vault/docs/platform/k8s",
+    "desc": "HashiCorp Vault for secrets, certificates, and encryption. On IKS/ROKS the clean path is External Secrets Operator, Vault Secrets Operator, and the Vault CSI provider. On VPC, Vault can run on VSIs and inject into instance workloads.",
+    "value": "Stop stuffing cluster Secrets and VSI files with long-lived keys. ESO/VSO/CSI is the Kubernetes story; a Vault cluster on VPC is the VSI story.",
+    "questions": [
+      "Is this secrets for IKS/ROKS (ESO, VSO, CSI) or for VPC VSIs?",
+      "Will they run Vault themselves on VPC, or consume IBM Cloud Secrets Manager instead?",
+      "Do they already have Consul or Terraform in the same HashiCorp stack?"
+    ],
+    "competitors": [
+      "IBM Cloud Secrets Manager",
+      "AWS Secrets Manager",
+      "CyberArk"
+    ],
+    "differentiators": [
+      "ESO, VSO, and CSI are documented Kubernetes injectors",
+      "Deployable on VPC VSIs next to the workloads",
+      "Same HashiCorp control plane as Terraform and Boundary"
+    ]
+  },
+  {
+    "id": "boundary",
+    "label": "Boundary",
+    "cat": "infra_lc",
+    "plays": [
+      3
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://developer.hashicorp.com/boundary/docs",
+    "desc": "HashiCorp Boundary for identity-based access to VPC workloads without a jump host or client-to-site VPN.",
+    "value": "When the conversation is 'how do admins SSH to VSIs', Boundary is the HashiCorp answer. Client-to-site VPN remains the IBM Cloud VPC answer.",
+    "questions": [
+      "Do admins need SSH/RDP into VPC VSIs without a bastion?",
+      "Is this instead of, or in addition to, client-to-site VPN?",
+      "Will Vault issue the credentials Boundary brokers?"
+    ],
+    "competitors": [
+      "IBM Cloud client-to-site VPN",
+      "Teleport",
+      "AWS Systems Manager Session Manager"
+    ],
+    "differentiators": [
+      "No jump host on the VPC",
+      "Identity-aware sessions, not a network tunnel",
+      "Pairs with Vault for just-in-time credentials"
+    ]
+  },
+  {
+    "id": "verify",
+    "label": "IBM Verify",
+    "cat": "sec_lc",
+    "plays": [
+      4
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://www.ibm.com/docs/en/sva",
+    "desc": "IBM Security Verify family. Verify Access can run on the cluster as reverse proxy, runtime, and OIDC, including an operator in the Red Hat catalog on ROKS.",
+    "value": "Cluster-native identity enforcement instead of only a SaaS login in front of the app. Pair with IBM Application Gateway when the front door should sit outside the app containers.",
+    "questions": [
+      "Should Verify Access run as containers on IKS or ROKS?",
+      "Do they want the certified operator from the Red Hat catalog (ROKS)?",
+      "Is IBM Application Gateway the OIDC front door back to Verify instead?"
+    ],
+    "competitors": [
+      "Okta",
+      "Ping Identity",
+      "Keycloak"
+    ],
+    "differentiators": [
+      "Verify Access ships as containers plus an OpenShift operator",
+      "Reverse proxy, runtime, and OIDC on the cluster",
+      "Works with IBM Application Gateway as an external OIDC front door"
+    ]
+  },
+  {
+    "id": "application_gateway",
+    "label": "IBM Application Gateway",
+    "cat": "sec_lc",
+    "plays": [
+      4
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://www.ibm.com/docs/en/ibm-application-gateway",
+    "desc": "Identity-aware reverse proxy that fronts cluster applications and does OIDC back to IBM Verify.",
+    "value": "Put Verify in front of IKS/ROKS apps without rewriting the application. Gateway is the front door; Verify is the IdP.",
+    "questions": [
+      "Should cluster apps get OIDC without code changes?",
+      "Is Verify already the IdP, or are they still on App ID / a custom IdP?",
+      "Does this sit in front of Ingress, or replace it?"
+    ],
+    "competitors": [
+      "oauth2-proxy",
+      "NGINX plus OIDC module",
+      "AWS ALB authenticate-oidc"
+    ],
+    "differentiators": [
+      "OIDC reverse proxy purpose-built for Verify",
+      "Fronts cluster apps without an app SDK",
+      "Pairs with Verify Access on the cluster"
+    ]
+  },
+  {
+    "id": "ns1",
+    "label": "NS1 Connect",
+    "cat": "net_mgmt",
+    "plays": [
+      5
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://kubernetes-sigs.github.io/external-dns/latest/docs/tutorials/ns1/",
+    "desc": "Authoritative DNS and traffic steering. On IKS/ROKS, NS1 is an official ExternalDNS provider so Ingress and Route hostnames publish automatically. NS1 also has a Terraform provider. Across VPC and PowerVS regions, NS1 does global steering and failover.",
+    "value": "One DNS control plane: ExternalDNS for cluster hostnames, Terraform for zones, and steering/failover for multi-region VPC and PowerVS front doors.",
+    "questions": [
+      "Should Ingress and OpenShift Routes publish to NS1 via ExternalDNS?",
+      "Do they need global steering across multi-region VPC or PowerVS?",
+      "Is DNS still in CIS, or moving to NS1 Connect?"
+    ],
+    "competitors": [
+      "IBM Cloud Internet Services",
+      "Amazon Route 53",
+      "Cloudflare"
+    ],
+    "differentiators": [
+      "Official ExternalDNS provider for Kubernetes and OpenShift Routes",
+      "First-class Terraform provider",
+      "Traffic steering and failover across IBM Cloud regions"
+    ]
+  },
+  {
+    "id": "hybrid_cloud_mesh",
+    "label": "Hybrid Cloud Mesh",
+    "cat": "net_mgmt",
+    "plays": [
+      5
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/hybrid-cloud-mesh",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "sevone",
+    "label": "SevOne",
+    "cat": "net_mgmt",
+    "plays": [
+      5
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://www.ibm.com/docs/en/sevone-npm",
+    "desc": "Network performance and flow monitoring. Container metrics can land via Prometheus. SevOne is network and flow, not cluster operations. On VPC and PowerVS it can collect cloud flow logs along Direct Link / VPN → Transit Gateway → VPC and back.",
+    "value": "The flow and network story next to Instana (apps) and IBM Cloud Monitoring (platform). Do not sell SevOne as the Kubernetes ops console.",
+    "questions": [
+      "Do they need flow logs from VPC, Direct Link, VPN, and Transit Gateway?",
+      "Should cluster nodes scrape Prometheus into SevOne, or is that Instana?",
+      "Is this PowerVS plus VPC on the same Transit Gateway path?"
+    ],
+    "competitors": [
+      "Kentik",
+      "ThousandEyes",
+      "Cisco ThousandEyes / AppDynamics"
+    ],
+    "differentiators": [
+      "Cloud flow-log collection across DL, VPN, TGW, and VPC",
+      "Prometheus scrape for container node metrics",
+      "Explicitly not cluster ops — that stays Instana or IBM Cloud Monitoring"
+    ]
+  },
+  {
+    "id": "network_intelligence",
+    "label": "IBM Network Intelligence",
+    "cat": "net_mgmt",
+    "plays": [
+      5
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "concert",
+    "label": "Concert",
+    "cat": "observability",
+    "plays": [
+      6
+    ],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://www.ibm.com/products/concert",
+    "desc": "Application-centric operations layer that can ingest cluster resources for inventory. Concert can deploy onto IKS/ROKS and is positioned to run Optimize (Turbonomic) and Observe (Instana plus SevOne). The product is still moving; treat current packaging as art of the possible.",
+    "value": "Inventory and app context on the cluster, not a replacement for Instana or SevOne. Be honest that Concert's packaging is in flux.",
+    "questions": [
+      "Do they want application inventory from the cluster, or just Instana APM?",
+      "Are they buying Concert as a bundle that includes Turbo and Observe?",
+      "Can they accept that Concert's deploy story is still changing?"
+    ],
+    "competitors": [
+      "ServiceNow ITOM",
+      "Dynatrace",
+      "Standalone Instana + Turbonomic"
+    ],
+    "differentiators": [
+      "Ingests cluster resources for app inventory",
+      "Can sit over Turbonomic, Instana, and SevOne",
+      "Moving target — do not over-promise deploy topology"
+    ]
+  },
+  {
+    "id": "instana",
+    "label": "Instana",
+    "cat": "observability",
+    "plays": [
+      6
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/instana",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "turbonomic",
+    "label": "Turbonomic",
+    "cat": "observability",
+    "plays": [
+      6
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/turbonomic",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "cloudability",
+    "label": "Cloudability",
+    "cat": "finops",
+    "plays": [
+      7
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/cloudability",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "kubecost",
+    "label": "Kubecost",
+    "cat": "finops",
+    "plays": [
+      7
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/kubecost",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "apptio",
+    "label": "Apptio",
+    "cat": "itfm",
+    "plays": [
+      8
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/apptio",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "targetprocess",
+    "label": "Targetprocess",
+    "cat": "itfm",
+    "plays": [
+      8
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/targetprocess",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "maximo",
+    "label": "Maximo Application Suite",
+    "cat": "asset_lc",
+    "plays": [
+      9
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/maximo",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  },
+  {
+    "id": "envizi",
+    "label": "Envizi ESG Suite",
+    "cat": "asset_lc",
+    "plays": [
+      9
+    ],
+    "hub": false,
+    "status": "placeholder",
+    "docsUrl": "https://www.ibm.com/products/envizi",
+    "desc": "Visual placeholder. Mapping, mechanisms, and seller copy will be filled in a later pass.",
+    "value": "Shown so the product set for this view is visible. No connections are claimed yet.",
+    "questions": [],
+    "competitors": [],
+    "differentiators": []
+  }
+]

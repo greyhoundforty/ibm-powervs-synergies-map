@@ -1,0 +1,94 @@
+{
+  "view": {
+    "id": "automation",
+    "label": "Automation",
+    "short": "Automation",
+    "mode": "overlay",
+    "blurb": "IaaS compute on top, then HashiCorp, Verify, NS1, SevOne, and Concert tie-ins. Remaining Automation chips are still visual-only."
+  },
+  "plays": {
+    "0": {
+      "id": 0,
+      "name": "IaaS Compute",
+      "short": "IaaS",
+      "cat": "iaas",
+      "varName": "--play-0"
+    },
+    "1": {
+      "id": 1,
+      "name": "Application Development",
+      "short": "App Dev",
+      "cat": "app_dev",
+      "varName": "--play-1"
+    },
+    "2": {
+      "id": 2,
+      "name": "Application Integration",
+      "short": "Integration",
+      "cat": "app_integ",
+      "varName": "--play-2"
+    },
+    "3": {
+      "id": 3,
+      "name": "Infrastructure Lifecycle",
+      "short": "Infra",
+      "cat": "infra_lc",
+      "varName": "--play-3"
+    },
+    "4": {
+      "id": 4,
+      "name": "Security Lifecycle",
+      "short": "Security",
+      "cat": "sec_lc",
+      "varName": "--play-4"
+    },
+    "5": {
+      "id": 5,
+      "name": "Network Management",
+      "short": "Network",
+      "cat": "net_mgmt",
+      "varName": "--play-5"
+    },
+    "6": {
+      "id": 6,
+      "name": "Observability",
+      "short": "Observability",
+      "cat": "observability",
+      "varName": "--play-6"
+    },
+    "7": {
+      "id": 7,
+      "name": "FinOps",
+      "short": "FinOps",
+      "cat": "finops",
+      "varName": "--play-7"
+    },
+    "8": {
+      "id": 8,
+      "name": "IT Financial Management",
+      "short": "ITFM",
+      "cat": "itfm",
+      "varName": "--play-8"
+    },
+    "9": {
+      "id": 9,
+      "name": "Asset Lifecycle",
+      "short": "Assets",
+      "cat": "asset_lc",
+      "varName": "--play-9"
+    }
+  },
+  "playOrder": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+  "categories": [
+    { "id": "iaas", "label": "IaaS Compute", "playId": 0 },
+    { "id": "app_dev", "label": "Application Development", "playId": 1 },
+    { "id": "app_integ", "label": "Application Integration", "playId": 2 },
+    { "id": "infra_lc", "label": "Infrastructure Lifecycle", "playId": 3 },
+    { "id": "sec_lc", "label": "Security Lifecycle", "playId": 4 },
+    { "id": "net_mgmt", "label": "Network Management", "playId": 5 },
+    { "id": "observability", "label": "Observability", "playId": 6 },
+    { "id": "finops", "label": "FinOps", "playId": 7 },
+    { "id": "itfm", "label": "IT Financial Management", "playId": 8 },
+    { "id": "asset_lc", "label": "Asset Lifecycle", "playId": 9 }
+  ]
+}

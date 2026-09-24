@@ -1,0 +1,34 @@
+[tools]
+node = "lts"
+
+[tasks.validate]
+description = "Validate data feed integrity"
+run = "node scripts/validate-feed.mjs"
+
+[tasks.dev]
+description = "Validate feed and run local development server"
+depends = ["validate"]
+run = "python3 -m http.server 4173"
+
+[tasks."git:commit"]
+description = "Stage changes and commit with a message"
+run = '''
+git add .
+if [ -z "$usage_msg" ] && [ -z "$1" ]; then
+  echo "Enter commit message:"
+  read -r msg
+else
+  msg="${1:-$usage_msg}"
+fi
+git commit -m "$msg"
+'''
+
+[tasks."deploy:preview"]
+description = "Validate feed and deploy preview to Vercel"
+depends = ["validate"]
+run = "npx vercel"
+
+[tasks."deploy:prod"]
+description = "Validate feed and deploy production build to Vercel"
+depends = ["validate"]
+run = "npx vercel --prod"

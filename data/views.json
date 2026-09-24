@@ -1,0 +1,11 @@
+{
+  "default": "powervs",
+  "views": [
+    {
+      "id": "powervs",
+      "label": "Power Virtual Server",
+      "hint": "OS · Storage · Backups · Replication · Migration",
+      "path": "data/powervs"
+    }
+  ]
+}
