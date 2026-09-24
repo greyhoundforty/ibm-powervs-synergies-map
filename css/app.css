@@ -461,14 +461,32 @@ body {
   transition: opacity 0.18s, background-color 0.11s, border-color 0.11s;
   user-select: none;
   white-space: nowrap;
-  max-width: 230px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   line-height: 1.2;
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  max-width: 280px;
 }
+
+/* Label text truncates; badges are flex siblings so they always show in full */
+.pnode > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* hw lane has only 3 nodes — allow full label width */
+.pnode[data-cat="powervs"] {
+  max-width: 380px;
+}
+
+/* Tighter cap for dense 6-node lanes to prevent overlap */
+.pnode[data-cat="backups"] > span:first-child,
+.pnode[data-cat="migration"] > span:first-child,
+.pnode[data-cat="cloud_services"] > span:first-child {
+  max-width: 130px;
+}
+
 
 .pnode:hover {
   background: var(--cds-background-hover);

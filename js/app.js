@@ -95,7 +95,7 @@ function dashFor(kind) {
 
 function layout() {
   const rect = els.map.getBoundingClientRect();
-  const padX = 130;
+  const padX = 180;  // symmetric margin — accommodates lane labels left, badges right
   const width = rect.width;
   const height = rect.height;
   const laneCount = state.playOrder.length || 1;
@@ -148,10 +148,10 @@ function layout() {
       const yHub = top + laneH * 0.28;
       const yNodes = top + laneH * 0.72;
       positions.set(hubNode.id, { x: width / 2, y: yHub });
-      const avail = width - padX * 2;
-      const step = nonHub.length > 1 ? avail / (nonHub.length - 1) : 0;
+      const hwAvail = width - padX * 2;
+      const hwStep = nonHub.length > 1 ? hwAvail / (nonHub.length - 1) : 0;
       nonHub.forEach((p, idx) => {
-        const x = nonHub.length === 1 ? width / 2 : padX + idx * step;
+        const x = nonHub.length === 1 ? width / 2 : padX + idx * hwStep;
         positions.set(p.id, { x, y: yNodes });
       });
     } else if (n === 1) {
@@ -177,6 +177,7 @@ function layout() {
     const node = document.createElement("div");
     node.className = `pnode${product.hub ? " is-hub" : ""}`;
     node.dataset.id = product.id;
+    node.dataset.cat = product.cat;
     node.style.left = `${pos.x}px`;
     node.style.top = `${pos.y}px`;
     const cat = catFor(product);
