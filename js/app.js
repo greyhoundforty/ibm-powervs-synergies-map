@@ -522,6 +522,44 @@ function renderSidebar() {
       <div class="sb-description">${escapeHtml(selected.desc)}</div>
     </div>
 
+    ${
+      selected.softwareTiers && selected.softwareTiers.length > 0
+        ? `
+      <div class="sb-section">
+        <div class="sb-section-title">
+          IBM i Software Tiers (Virtual Software Tiers)
+          <a class="sb-section-docs-link" href="https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ibmi-vsw-tiers" target="_blank" rel="noopener noreferrer" title="IBM Documentation">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M10 2v1.5h2.44L6.97 9.03l1.06 1.06 5.47-5.47V7H15V2h-5z"/><path d="M13 13.5H3v-10h4.5V2H3a1.5 1.5 0 0 0-1.5 1.5v10A1.5 1.5 0 0 0 3 15h10a1.5 1.5 0 0 0 1.5-1.5V9h-1.5v4.5z"/></svg>
+          </a>
+        </div>
+        <table class="sb-tier-table">
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th>Max vCPUs</th>
+              <th>Max RAM</th>
+              <th>Licensing</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${selected.softwareTiers.map((t) => `
+              <tr>
+                <td><span class="sb-tier-badge">${escapeHtml(t.id)}</span></td>
+                <td>${escapeHtml(t.maxVcpu)}</td>
+                <td>${escapeHtml(t.maxRam)}</td>
+                <td>${escapeHtml(t.licensing)}</td>
+              </tr>
+              <tr class="sb-tier-notes-row">
+                <td colspan="4">${escapeHtml(t.notes)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `
+        : ""
+    }
+
     <div class="sb-section">
       <div class="sb-section-title">Seller Value Proposition</div>
       <div class="sb-value">${escapeHtml(selected.value)}</div>

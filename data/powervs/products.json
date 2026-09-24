@@ -145,11 +145,12 @@
     "hub": false,
     "status": "ga",
     "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ibmi-configure",
-    "desc": "Integrated operating environment with built-in Db2 database, robust security, and subsystem architecture (IBM i 7.3, 7.4, 7.5). Supports P05 to P30 software tiers, LPP licensing bundles, and Virtual Serial Numbers (VSN).",
-    "value": "Runs Core ERP, financial, and manufacturing applications without re-platforming. Enables access via modern REST APIs, ACS 5250, and seamless hybrid cloud extensions.",
+    "desc": "Integrated operating environment with built-in Db2 database, robust security, and subsystem architecture (IBM i 7.3, 7.4, 7.5). Supports P05 to P30 Virtual Software Tiers (VST), LPP licensing bundles, and Virtual Serial Numbers (VSN). VSTs decouple licensing from physical hardware — billing follows the tier assigned to the VSI.",
+    "value": "Runs Core ERP, financial, and manufacturing applications without re-platforming. Enables access via modern REST APIs, ACS 5250, and seamless hybrid cloud extensions. Right-size IBM i licensing to actual workload needs using Virtual Software Tiers rather than paying for a full physical machine tier.",
     "questions": [
-      "What IBM i software tier (P05, P10, P20, P30) and OS version is your workload running?",
-      "Are ISV applications tied to hardware CPU serial numbers (requiring Virtual Serial Numbers)?",
+      "What IBM i software tier (P05, P10, P20, P30) and OS version is your workload currently running on-premises?",
+      "Are ISV applications tied to hardware CPU serial numbers (requiring Virtual Serial Numbers / VSN)?",
+      "Do you need per-user entitlements (P05/P10) or are you running a processor-only model (P20/P30)?",
       "Do you use BRMS for backup and media cataloging?",
       "Do you need to integrate Db2 for i data with cloud analytics and AI?"
     ],
@@ -158,9 +159,40 @@
       "Custom mainframe emulation / x86 rewrite"
     ],
     "differentiators": [
+      "Virtual Software Tiers (VST) decouple IBM i licensing from physical hardware for right-sized cloud billing",
       "Integrated Db2 database and object-based operating environment",
       "Virtual Serial Numbers (VSN) protect legacy ISV software licensing investments",
-      "BYOL and IBM-provided Cloud OS subscription tiers with LPP bundles"
+      "BYOL and IBM-provided Cloud OS subscription tiers with LPP bundles; subscription term licensing available for all tiers"
+    ],
+    "softwareTiers": [
+      {
+        "id": "P05",
+        "maxVcpu": "1",
+        "maxRam": "64 GB",
+        "licensing": "Per-core + per-user",
+        "notes": "Entry tier. Includes user entitlements. Suitable for small workloads and dev/test IBM i instances."
+      },
+      {
+        "id": "P10",
+        "maxVcpu": "4",
+        "maxRam": "1 TB",
+        "licensing": "Per-core + per-user",
+        "notes": "Mid-range tier. Includes user entitlements. Covers most ERP and mid-market IBM i production workloads."
+      },
+      {
+        "id": "P20",
+        "maxVcpu": "12",
+        "maxRam": "1 TB",
+        "licensing": "Per-core only",
+        "notes": "No user entitlements required. Standard edition bundle (P20 Standard Edition) available from July 2025."
+      },
+      {
+        "id": "P30",
+        "maxVcpu": "Unlimited",
+        "maxRam": "Unlimited",
+        "licensing": "Per-core only",
+        "notes": "Enterprise tier. No vCPU or RAM caps. Enterprise Edition bundle (P30 Enterprise Edition) available from July 2025."
+      }
     ]
   },
   {
