@@ -215,6 +215,34 @@
     ]
   },
   {
+    "id": "storage_tier0",
+    "label": "Tier 0 Storage (Ultra-High IOPS)",
+    "cat": "storage",
+    "plays": [2],
+    "os": ["aix", "ibmi", "linux", "ocp"],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-on-cloud-architecture#storage-tiers",
+    "desc": "Highest-performance PowerVS block storage tier delivering 25 IOPS/GB on the enterprise IBM FlashSystem NVMe/SSD backend — 2.5× faster than Tier 1 and 8.3× faster than Tier 3. Designed for the most demanding high-performance databases. A companion Fixed IOPs tier (5,000 IOPS flat) is available for volumes ≤200 GB as an equivalent break-even option.",
+    "value": "Delivers maximum IOPS density for high-throughput transactional databases, latency-sensitive SAP HANA log volumes, and any workload where storage I/O is the bottleneck. All PowerVS storage tiers share the same enterprise FlashSystem SAN hardware — Tier 0 simply allocates the highest IOPS/GB profile.",
+    "questions": [
+      "Are you deploying a high-performance OLTP database where storage IOPS is the primary constraint?",
+      "Have you profiled your current on-premises IOPS requirements and determined they exceed what Tier 1 can deliver?",
+      "Are you running SAP HANA production data or log volumes that demand the highest IOPS density?",
+      "Are your volumes ≤200 GB where Fixed IOPs (5,000 flat) could be a cost-equivalent alternative?"
+    ],
+    "competitors": [
+      "AWS io2 Block Express",
+      "Azure Ultra Disk Storage",
+      "GCP Extreme Persistent Disk"
+    ],
+    "differentiators": [
+      "25 IOPS/GB — 2.5× the performance of Tier 1 on the same enterprise FlashSystem NVMe/SSD hardware",
+      "Online, non-disruptive tier switching between Tier 0, Tier 1, and Tier 3 via API or console",
+      "Fixed IOPs companion option (5,000 IOPS regardless of size) for volumes ≤200 GB"
+    ]
+  },
+  {
     "id": "storage_tier1",
     "label": "Tier 1 Storage (High IOPS Tier)",
     "cat": "storage",
@@ -223,20 +251,20 @@
     "hub": false,
     "status": "ga",
     "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-on-cloud-architecture#storage-tiers",
-    "desc": "High IOPS performance storage tier on the common enterprise IBM FlashSystem backend (NVMe/SSD). Delivers highest IOPS density (up to ~10 IOPS/GB) for heavy transactional databases, redo logs, and SAP HANA.",
-    "value": "All PowerVS block storage tiers share the same enterprise FlashSystem SAN hardware infrastructure; Tier 1 allocates the highest IOPS throughput profile for demanding database I/O.",
+    "desc": "High IOPS performance storage tier on the common enterprise IBM FlashSystem backend (NVMe/SSD). Delivers 10 IOPS/GB for heavy transactional databases, redo logs, and SAP HANA production volumes.",
+    "value": "All PowerVS block storage tiers share the same enterprise FlashSystem SAN hardware infrastructure; Tier 1 allocates a high IOPS throughput profile for production database I/O at a lower cost than Tier 0.",
     "questions": [
       "What are the IOPS and latency requirements for your core database transaction logs?",
-      "Are you sizing SAP HANA production data and log volumes for maximum IOPS density?",
-      "Do your batch processing windows require maximum storage IOPS throughput?"
+      "Are you sizing SAP HANA production data and log volumes for high IOPS density without requiring Tier 0 peak performance?",
+      "Do your batch processing windows require high storage IOPS throughput?"
     ],
     "competitors": [
       "AWS io2 Block Express",
-      "Azure Ultra Disk Storage"
+      "Azure Premium SSD v2"
     ],
     "differentiators": [
-      "Runs on identical enterprise IBM FlashSystem NVMe/SSD hardware as Tier 3 with software-governed IOPS profiles",
-      "Highest IOPS per GB allocation for latency-sensitive OLTP workloads",
+      "Runs on identical enterprise IBM FlashSystem NVMe/SSD hardware as Tier 0 and Tier 3 with software-governed IOPS profiles",
+      "10 IOPS/GB allocation for latency-sensitive OLTP production workloads",
       "Support for Global Replication Services (GRS) volume group mirroring and online tier switching"
     ]
   },
@@ -294,22 +322,26 @@
     "label": "Virtual Persistent Memory (vPMEM)",
     "cat": "storage",
     "plays": [2],
-    "os": ["linux"],
+    "os": ["aix", "linux"],
     "hub": false,
     "status": "ga",
     "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-attaching-vpmem",
-    "desc": "Non-volatile memory allocations attached directly to PowerVS virtual server instances, preserving data across system restarts at DRAM-like speeds.",
-    "value": "Dramatically accelerates SAP HANA restart times by keeping column store tables loaded in persistent memory, reducing recovery downtime from hours to minutes.",
+    "desc": "Non-volatile memory allocations attached directly to PowerVS virtual server instances on Power10 or later, preserving data across system restarts at DRAM-like speeds. Supported on AIX and Linux (including Linux for SAP HANA) VSIs. Up to 4 vPMEM volumes can be attached to a single AIX or Linux VSI. Not supported on IBM i VSIs. VSI must be in Shutoff state to add or remove volumes.",
+    "value": "Dramatically accelerates SAP HANA restart times on Linux by keeping column store tables in persistent memory. On AIX, provides non-volatile in-memory data structures for workloads that require DRAM-speed persistence across reboots — without the overhead of hardware DIMM configuration.",
     "questions": [
-      "Are you deploying large SAP HANA databases where restart time is critical to SLAs?",
-      "Do you need low-latency in-memory data structures that survive LPAR reboots?"
+      "Are you deploying large SAP HANA databases on Linux where restart time is critical to SLAs?",
+      "Do you have AIX workloads that require low-latency in-memory data structures that survive LPAR reboots?",
+      "Are you running Power10 or later hardware (vPMEM is not available on Power9)?",
+      "Have you confirmed your AIX or Linux VSI profile is not an SAP-certified profile (which limits vPMEM to 1 volume and cannot be resized after provisioning)?"
     ],
     "competitors": [
-      "Intel Optane Persistent Memory on x86 bare metal"
+      "Intel Optane Persistent Memory on x86 bare metal",
+      "AWS r7i high-memory instances with instance store"
     ],
     "differentiators": [
-      "Native Power hypervisor vPMEM implementation without hardware DIMM configuration overhead",
-      "SAP HANA certified acceleration for enterprise in-memory databases"
+      "Native Power hypervisor vPMEM using DRAM technology — no special hardware DIMMs required",
+      "Supports both AIX (up to 4 volumes) and Linux/SAP HANA (up to 1 volume on certified profiles)",
+      "Costs are additive to AIX/Linux VSI memory; vPMEM memory is deducted from SAP profile total at no extra charge"
     ]
   },
   {

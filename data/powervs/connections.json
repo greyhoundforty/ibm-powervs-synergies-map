@@ -200,6 +200,17 @@
 
   {
     "from": "powervs_offprem",
+    "to": "storage_tier0",
+    "kind": "native",
+    "mechanism": "fc_san_attach",
+    "lane": "storage",
+    "status": "ga",
+    "summary": "Tier 0 ultra-high-IOPS storage volume tier (25 IOPS/GB) attaches to PowerVS LPARs over the common FlashSystem SAN infrastructure for maximum database throughput.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-on-cloud-architecture#storage-tiers",
+    "sellerNote": "2.5× the IOPS density of Tier 1 on the same enterprise FlashSystem hardware. Position for high-performance OLTP databases and SAP HANA log volumes where storage I/O is the critical bottleneck."
+  },
+  {
+    "from": "powervs_offprem",
     "to": "storage_tier1",
     "kind": "native",
     "mechanism": "fc_san_attach",
