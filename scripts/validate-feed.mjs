@@ -11,7 +11,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const catalog = JSON.parse(readFileSync(join(root, "data/views.json"), "utf8"));
 
 const KINDS = new Set(["native", "platform", "optional"]);
-const STATUSES = new Set(["ga", "coming_soon", "partner", "deprecated", "placeholder"]);
+const STATUSES = new Set(["ga", "coming_soon", "partner", "deprecated", "placeholder", "restricted"]);
 
 const errors = [];
 const warnings = [];

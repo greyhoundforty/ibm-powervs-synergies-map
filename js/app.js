@@ -1,5 +1,12 @@
 const KIND_ORDER = ["native", "platform", "optional"];
 
+const OS_FILTERS = [
+  { id: "aix",   label: "AIX" },
+  { id: "ibmi",  label: "IBM i" },
+  { id: "linux", label: "Linux" },
+  { id: "ocp",   label: "OpenShift" },
+];
+
 const state = {
   views: [],
   viewId: null,
@@ -12,11 +19,13 @@ const state = {
   selectedId: null,
   query: "",
   laneFilter: null,
+  osFilter: null,
   chromeBound: false,
 };
 
 const els = {
   legend: document.getElementById("play-legend"),
+  osFilter: document.getElementById("os-filter"),
   lanes: document.getElementById("lanes"),
   nodes: document.getElementById("nodes"),
   svg: document.getElementById("svg-connections"),
@@ -160,6 +169,12 @@ function layout() {
       badge.textContent = "Partner";
       node.appendChild(badge);
     }
+    if (product.status === "restricted") {
+      const badge = document.createElement("span");
+      badge.className = "restricted-badge";
+      badge.textContent = "Existing clients only";
+      node.appendChild(badge);
+    }
 
     node.addEventListener("click", () => selectProduct(product.id));
     els.nodes.appendChild(node);
@@ -214,21 +229,67 @@ function selectProduct(id) {
   if (state.selectedId === id) {
     state.selectedId = null;
     state.laneFilter = null;
+    // If deselecting an OS node, also clear the implicit OS scope
+    if (OS_NODE_MAP[id]) state.osFilter = null;
   } else {
     state.selectedId = id;
+    // Selecting a non-OS node clears any active OS chip filter
+    if (!OS_NODE_MAP[id]) state.osFilter = null;
   }
   renderLegend();
+  renderOsFilter();
   renderSidebar();
   applyHighlights();
+}
+
+// Returns the OS tag implied by the selected node (e.g. "os_aix" → "aix")
+const OS_NODE_MAP = { os_aix: "aix", os_ibmi: "ibmi", os_linux: "linux", os_ocp: "ocp" };
+
+function productMatchesOs(product, osTag) {
+  if (!osTag) return true;
+  const os = product.os;
+  if (!os || os.length === 0) return true; // agnostic — always included
+  return os.includes(osTag);
 }
 
 function applyHighlights() {
   const selected = state.selectedId;
   const q = state.query.trim().toLowerCase();
-  const relevantConns = selected ? connectionsFor(selected, state.laneFilter) : [];
-  const neighborIds = new Set(
-    relevantConns.flatMap((c) => [c.from, c.to]).filter((id) => id !== selected)
+
+  // Determine effective OS scope: explicit chip filter OR OS node selection
+  const selectedOsTag = selected ? OS_NODE_MAP[selected] : null;
+  const activeOs = state.osFilter || selectedOsTag || null;
+
+  // Build neighbor set from graph edges (used when no OS-node is selected)
+  const graphConns = selected && !selectedOsTag
+    ? connectionsFor(selected, null) // get all lane connections, filter later
+    : [];
+  const graphNeighborIds = new Set(
+    graphConns.flatMap((c) => [c.from, c.to]).filter((id) => id !== selected)
   );
+
+  // When an OS node is selected or a chip is active, "neighbors" = all products
+  // sharing that OS tag (excluding the OS node itself).
+  // If laneFilter is also active, further restrict to that lane.
+  const osNeighborIds = activeOs
+    ? new Set(
+        state.products
+          .filter((p) => {
+            if (p.id === selected) return false;
+            if (!productMatchesOs(p, activeOs)) return false;
+            if (state.laneFilter && p.cat !== state.laneFilter) return false;
+            return true;
+          })
+          .map((p) => p.id)
+      )
+    : null;
+
+  // For graph-based selection, also apply lane filter
+  const filteredGraphNeighborIds = state.laneFilter && !activeOs
+    ? new Set([...graphNeighborIds].filter((id) => productById(id)?.cat === state.laneFilter))
+    : graphNeighborIds;
+
+  const neighborIds = osNeighborIds ?? filteredGraphNeighborIds;
 
   const nodes = els.nodes.querySelectorAll(".pnode");
   nodes.forEach((node) => {
@@ -238,13 +299,20 @@ function applyHighlights() {
     const isNbr = neighborIds.has(id);
     const isHit = q && matchesQuery(product, q);
     const inLane = !state.laneFilter || product.cat === state.laneFilter;
+    const inOs = !activeOs || productMatchesOs(product, activeOs);
 
     node.classList.toggle("is-selected", isSel);
     node.classList.toggle("is-neighbor", isNbr);
     node.classList.toggle("is-query-hit", Boolean(isHit));
 
     let dimmed = false;
-    if (selected) {
+    if (activeOs && state.laneFilter) {
+      // OS + lane: dim everything not selected and not in the filtered lane set
+      dimmed = !isSel && !isNbr;
+    } else if (activeOs) {
+      // OS only: dim nodes that don't match this OS
+      dimmed = !isSel && !inOs;
+    } else if (selected) {
       dimmed = !isSel && !isNbr;
     } else if (state.laneFilter) {
       dimmed = !inLane;
@@ -260,13 +328,73 @@ function applyHighlights() {
   paths.forEach((path) => {
     const from = path.dataset.from;
     const to = path.dataset.to;
-    const matches =
-      selected &&
-      ((from === selected && neighborIds.has(to)) ||
-        (to === selected && neighborIds.has(from)));
 
-    path.classList.toggle("is-lit", Boolean(matches));
-    path.classList.toggle("is-dimmed", selected ? !matches : false);
+    let lit = false;
+    let dimmed = false;
+
+    // Only powervs-cat nodes (the hub + hardware nodes) act as routing relays.
+    // Storage, backup, etc. nodes should never light up secondary edges.
+    const isRelay = (id) => productById(id)?.cat === "powervs";
+
+    if (activeOs) {
+      if (state.laneFilter) {
+        // Lane + OS: light a path only if one end is a visible lane neighbor
+        // and the other end is either also a lane neighbor, the selected OS node,
+        // or a powervs relay (hub/hw node).
+        const fromInLane = neighborIds.has(from);
+        const toInLane = neighborIds.has(to);
+        const fromOk = fromInLane || from === selected || isRelay(from);
+        const toOk = toInLane || to === selected || isRelay(to);
+        lit = (fromInLane || toInLane) && fromOk && toOk;
+      } else {
+        // OS only: light edges between any two OS-matching nodes,
+        // but only allow powervs-cat nodes as relays (not e.g. COS relaying backups).
+        const fromMatch = from === selected || neighborIds.has(from) || isRelay(from);
+        const toMatch = to === selected || neighborIds.has(to) || isRelay(to);
+        // At least one end must be a real OS neighbor (not just a relay)
+        const hasRealEnd = neighborIds.has(from) || neighborIds.has(to) || from === selected || to === selected;
+        lit = fromMatch && toMatch && hasRealEnd;
+      }
+      dimmed = !lit;
+    } else if (selected) {
+      // Graph-edge mode: suppress edges going up to the PowerVS hub or hw nodes
+      // unless the selected node IS a powervs-cat node.
+      const selectedCat = productById(selected)?.cat;
+      const suppressHub = selectedCat !== "powervs";
+      const fromHub = suppressHub && isRelay(from);
+      const toHub = suppressHub && isRelay(to);
+      lit = !fromHub && !toHub && (
+        (from === selected && filteredGraphNeighborIds.has(to)) ||
+        (to === selected && filteredGraphNeighborIds.has(from))
+      );
+      dimmed = !lit;
+    }
+
+    path.classList.toggle("is-lit", lit);
+    path.classList.toggle("is-dimmed", dimmed);
+  });
+}
+
+function renderOsFilter() {
+  if (!els.osFilter) return;
+  els.osFilter.innerHTML = OS_FILTERS.map(({ id, label }) => {
+    const active = state.osFilter === id;
+    return `<button type="button" class="os-chip${active ? " is-active" : ""}" data-os="${id}" aria-pressed="${active}">${escapeHtml(label)}</button>`;
+  }).join("");
+
+  els.osFilter.querySelectorAll(".os-chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const os = chip.dataset.os;
+      state.osFilter = state.osFilter === os ? null : os;
+      // Clear any non-OS node selection to avoid conflicts
+      if (state.selectedId && !OS_NODE_MAP[state.selectedId]) {
+        state.selectedId = null;
+      }
+      renderOsFilter();
+      renderLegend();
+      renderSidebar();
+      applyHighlights();
+    });
   });
 }
 
@@ -314,6 +442,11 @@ function renderSidebar() {
     `;
   }
 
+  const OS_LABEL = { aix: "AIX", ibmi: "IBM i", linux: "Linux", ocp: "OpenShift" };
+  const osTags = (selected.os || [])
+    .map((o) => `<span class="play-pill os-pill os-pill--${o}">${OS_LABEL[o] || o}</span>`)
+    .join("");
+
   els.sidebar.innerHTML = `
     <div class="sb-category">${escapeHtml(cat?.label || "")}</div>
     <div class="sb-title">${escapeHtml(selected.label)}</div>
@@ -321,6 +454,8 @@ function renderSidebar() {
       <span class="play-pill"><span class="dot" style="--play-color:${playColor(cat?.playId)}"></span>${escapeHtml(cat?.label || "")}</span>
       ${selected.hub ? `<span class="play-pill">Core Hub</span>` : ""}
       ${selected.status === "partner" ? `<span class="play-pill" style="color:var(--play-4)">Partner Offering</span>` : ""}
+      ${selected.status === "restricted" ? `<span class="play-pill restricted-pill">⚠ Existing clients only — new deployments must use Power10 or Power11</span>` : ""}
+      ${osTags}
     </div>
 
     <div class="sb-section">
@@ -392,15 +527,26 @@ function renderSidebar() {
 
 function renderLegend() {
   const selected = state.selectedId;
+  const selectedOsTag = selected ? OS_NODE_MAP[selected] : null;
+  const activeOs = state.osFilter || selectedOsTag || null;
   const counts = new Map();
 
-  if (selected) {
+  if (activeOs) {
+    // Count per lane: how many products match this OS (excluding the OS nodes themselves)
+    for (const p of state.products) {
+      if (OS_NODE_MAP[p.id]) continue; // skip the OS nodes themselves
+      if (!productMatchesOs(p, activeOs)) continue;
+      counts.set(p.cat, (counts.get(p.cat) || 0) + 1);
+    }
+  } else if (selected) {
     const all = neighborsOf(selected);
     for (const c of all) {
       const cat = neighborCat(c, selected);
       if (cat) counts.set(cat, (counts.get(cat) || 0) + 1);
     }
   }
+
+  const showCounts = Boolean(activeOs || selected);
 
   els.legend.innerHTML = state.playOrder
     .map((playId) => {
@@ -413,7 +559,7 @@ function renderLegend() {
         <button type="button" class="legend-chip" data-cat="${cat}" aria-pressed="${active}">
           <span class="dot" style="--play-color:${playColor(play.id)}"></span>
           <span>${escapeHtml(play.name)}</span>
-          ${selected ? `<span class="chip-count">${count}</span>` : ""}
+          ${showCounts ? `<span class="chip-count">${count}</span>` : ""}
         </button>
       `;
     })
@@ -460,7 +606,9 @@ function bindChrome() {
   els.reset.addEventListener("click", () => {
     state.selectedId = null;
     state.laneFilter = null;
+    state.osFilter = null;
     renderLegend();
+    renderOsFilter();
     renderSidebar();
     applyHighlights();
   });
@@ -510,6 +658,7 @@ async function load() {
 
   bindChrome();
   renderLegend();
+  renderOsFilter();
   renderFooter();
   renderSidebar();
   layout();

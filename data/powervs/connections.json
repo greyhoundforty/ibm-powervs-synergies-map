@@ -1,6 +1,39 @@
 [
   {
     "from": "powervs_offprem",
+    "to": "hw_power11",
+    "kind": "native",
+    "mechanism": "pvm_hardware_gen",
+    "lane": "powervs",
+    "status": "ga",
+    "summary": "IBM Power Virtual Server provisions LPARs on Power11 hardware in select IBM Cloud data centers, delivering next-generation AI acceleration and memory bandwidth.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started",
+    "sellerNote": "Recommended for new deployments targeting the latest IBM Power architecture with integrated AI inferencing."
+  },
+  {
+    "from": "powervs_offprem",
+    "to": "hw_power10",
+    "kind": "native",
+    "mechanism": "pvm_hardware_gen",
+    "lane": "powervs",
+    "status": "ga",
+    "summary": "IBM Power Virtual Server provisions LPARs on Power10 hardware across all IBM Cloud data centers — the standard generation for new AIX, IBM i, Linux, and SAP HANA deployments.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started",
+    "sellerNote": "Broadest regional availability and SAP HANA certification make Power10 the default choice for new PowerVS workloads."
+  },
+  {
+    "from": "powervs_offprem",
+    "to": "hw_power9",
+    "kind": "platform",
+    "mechanism": "pvm_hardware_gen",
+    "lane": "powervs",
+    "status": "restricted",
+    "summary": "Power9 capacity is available to existing PowerVS clients only. From August 2026, new client deployments must select Power10 or Power11.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started",
+    "sellerNote": "Existing clients may continue on Power9; new clients and migrations should target Power10 or Power11."
+  },
+  {
+    "from": "powervs_offprem",
     "to": "os_aix",
     "kind": "native",
     "mechanism": "pvm_instance",
@@ -42,39 +75,6 @@
     "summary": "Red Hat OpenShift Container Platform (OCP) clusters deploy onto PowerVS LPARs co-located with AIX/IBM i databases.",
     "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-redhat-openshift-power",
     "sellerNote": "Enables modern cloud-native container workloads directly adjacent to core transactional databases on Power."
-  },
-  {
-    "from": "powervs_private_cloud",
-    "to": "os_aix",
-    "kind": "native",
-    "mechanism": "pvm_pod_instance",
-    "lane": "os",
-    "status": "ga",
-    "summary": "PowerVS Private Cloud runs AIX instances inside client data center pods managed by the IBM Cloud control plane.",
-    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started-pc",
-    "sellerNote": "On-prem data sovereignty and ultra-low latency for AIX enterprise workloads."
-  },
-  {
-    "from": "powervs_private_cloud",
-    "to": "os_ibmi",
-    "kind": "native",
-    "mechanism": "pvm_pod_instance",
-    "lane": "os",
-    "status": "ga",
-    "summary": "PowerVS Private Cloud runs IBM i instances locally with on-premises SAN performance and IBM Cloud API automation.",
-    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started-pc",
-    "sellerNote": "Ideal for manufacturing and banking clients with strict regulatory data residency requirements."
-  },
-  {
-    "from": "powervs_private_cloud",
-    "to": "os_linux",
-    "kind": "native",
-    "mechanism": "pvm_pod_instance",
-    "lane": "os",
-    "status": "ga",
-    "summary": "PowerVS Private Cloud supports RHEL and SLES for on-premises SAP HANA and analytics pods.",
-    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-getting-started-pc",
-    "sellerNote": "Cloud consumption economics for on-prem enterprise Linux workloads."
   },
   {
     "from": "powervs_offprem",
@@ -462,6 +462,28 @@
     "sellerNote": "Customer-managed encryption keys for all cloud-hosted backup archives and images."
   },
   {
+    "from": "cloud_direct_link",
+    "to": "cloud_transit_gateway",
+    "kind": "native",
+    "mechanism": "dl_tgw_attachment",
+    "lane": "cloud_services",
+    "status": "ga",
+    "summary": "Direct Link 2.0 connections attach to Transit Gateway as a network connection, advertising on-premises routes into PowerVS and VPC workspaces over a dedicated private circuit.",
+    "docsUrl": "https://cloud.ibm.com/docs/dl?topic=dl-get-started-with-ibm-cloud-dl",
+    "sellerNote": "Single Direct Link attachment on TGW provides private reachability to PowerVS, VPC, and Classic — no separate connections per service."
+  },
+  {
+    "from": "powervs_offprem",
+    "to": "cloud_direct_link",
+    "kind": "platform",
+    "mechanism": "per_tgw_dl_path",
+    "lane": "cloud_services",
+    "status": "ga",
+    "summary": "PowerVS workspaces reach on-premises networks via PER → Transit Gateway → Direct Link 2.0, providing a fully private path for hybrid replication and migration traffic.",
+    "docsUrl": "https://cloud.ibm.com/docs/dl?topic=dl-get-started-with-ibm-cloud-dl",
+    "sellerNote": "Required for PowerHA cross-site DR, MIMIX/GRS replication, and large-scale mksysb / BRMS migration data transfers that cannot traverse the internet."
+  },
+  {
     "from": "cloud_transit_gateway",
     "to": "cloud_vpc",
     "kind": "native",
@@ -482,5 +504,181 @@
     "summary": "Transit Gateway propagates routes from VPC VPN gateways to PowerVS workspaces for secure remote administrative access.",
     "docsUrl": "https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-create-server",
     "sellerNote": "Replaces legacy VPNaaS by terminating VPN tunnels on VPC and routing via Transit Gateway."
+  },
+  {
+    "from": "backup_compass",
+    "to": "os_aix",
+    "kind": "platform",
+    "mechanism": "baas_agent",
+    "lane": "backups",
+    "status": "partner",
+    "summary": "Compass BaaS deploys IBM Storage Protect agents on AIX LPARs for automated backup policy management.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-backup-strategies#baas",
+    "sellerNote": "Turnkey AIX backup automation with Cobalt Iron policy engine and ransomware analytics."
+  },
+  {
+    "from": "backup_compass",
+    "to": "os_ibmi",
+    "kind": "platform",
+    "mechanism": "baas_agent",
+    "lane": "backups",
+    "status": "partner",
+    "summary": "Compass BaaS deploys IBM Storage Protect agents on IBM i instances for automated backup policy management.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-backup-strategies#baas",
+    "sellerNote": "Turnkey IBM i backup automation with centralized governance and air-gapped cyber resilience."
+  },
+  {
+    "from": "backup_falconstor",
+    "to": "os_aix",
+    "kind": "platform",
+    "mechanism": "iscsi_vtl_target",
+    "lane": "backups",
+    "status": "partner",
+    "summary": "FalconStor VTL presents iSCSI virtual tape drives to AIX — mksysb, savevg, and tar backup scripts write to VTL unchanged.",
+    "docsUrl": "https://www.falconstor.com/partners/ibm-partnership/powervs-resident-backup/",
+    "sellerNote": "Zero script changes for existing AIX tape backup procedures with up to 95% deduplication savings."
+  },
+  {
+    "from": "backup_falconstor",
+    "to": "os_ibmi",
+    "kind": "platform",
+    "mechanism": "iscsi_vtl_target",
+    "lane": "backups",
+    "status": "partner",
+    "summary": "FalconStor VTL presents iSCSI virtual tape drives to IBM i — BRMS, SAVSYS, and SAVLIB commands write to VTL unchanged.",
+    "docsUrl": "https://www.falconstor.com/partners/ibm-partnership/powervs-resident-backup/",
+    "sellerNote": "Enables existing IBM i tape scripts to run unchanged while reducing cloud storage costs via deduplication."
+  },
+  {
+    "from": "backup_brms_icc",
+    "to": "os_ibmi",
+    "kind": "native",
+    "mechanism": "icc_s3_client",
+    "lane": "backups",
+    "status": "ga",
+    "summary": "BRMS (5770-BR1) manages backup media and schedules on IBM i; ICC (5733-ICC) streams saved objects directly to Cloud Object Storage.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-backup-brms-icc",
+    "sellerNote": "Standard native IBM i backup path — no third-party software required."
+  },
+  {
+    "from": "backup_storage_protect",
+    "to": "os_aix",
+    "kind": "platform",
+    "mechanism": "sp_client_agent",
+    "lane": "backups",
+    "status": "ga",
+    "summary": "IBM Storage Protect client agent runs on AIX LPARs, capturing mksysb system images and incremental file/DB backups to COS storage pools.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-aix-backups",
+    "sellerNote": "Gold standard for AIX bare-metal recovery and granular Oracle/Db2 database backup."
+  },
+  {
+    "from": "backup_veeam",
+    "to": "os_aix",
+    "kind": "optional",
+    "mechanism": "veeam_agent",
+    "lane": "backups",
+    "status": "partner",
+    "summary": "Veeam Agent for AIX installs on AIX LPARs and reports to Veeam Backup & Replication for unified backup policy governance.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-backup-strategies#veeam-aix",
+    "sellerNote": "Best fit when the client already standardizes on Veeam across their x86 hybrid estate."
+  },
+  {
+    "from": "repl_powerha_aix",
+    "to": "os_aix",
+    "kind": "platform",
+    "mechanism": "rsct_cluster",
+    "lane": "replication",
+    "status": "ga",
+    "summary": "PowerHA SystemMirror cluster agents run on paired AIX LPARs, monitoring heartbeats and orchestrating IP takeover on failure.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ha-dr-mechanisms#powerha-aix",
+    "sellerNote": "Sub-minute automated failover with Smart Assists for SAP, Oracle, and Db2 on AIX."
+  },
+  {
+    "from": "repl_powerha_ibmi",
+    "to": "os_ibmi",
+    "kind": "platform",
+    "mechanism": "iasp_geomirror",
+    "lane": "replication",
+    "status": "ga",
+    "summary": "PowerHA for i Geographic Mirroring replicates IBM i IASPs between two PowerVS instances at page level.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ha-dr-mechanisms#powerha-ibmi",
+    "sellerNote": "Page-level storage clustering beneath the IBM i OS — no application journaling overhead."
+  },
+  {
+    "from": "repl_db2_qrep",
+    "to": "os_aix",
+    "kind": "optional",
+    "mechanism": "mq_log_reader",
+    "lane": "replication",
+    "status": "ga",
+    "summary": "Db2 Q-Replication log reader agent runs on AIX, capturing transaction changes and forwarding via IBM MQ to target systems.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ha-dr-mechanisms#db2-replication",
+    "sellerNote": "High-throughput log-based DB replication with schema filtering for active-active and reporting setups."
+  },
+  {
+    "from": "repl_db2_qrep",
+    "to": "os_ibmi",
+    "kind": "optional",
+    "mechanism": "mq_log_reader",
+    "lane": "replication",
+    "status": "ga",
+    "summary": "Db2 Q-Replication log reader agent runs on IBM i, capturing Db2 for i journal changes and forwarding via IBM MQ.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ha-dr-mechanisms#db2-replication",
+    "sellerNote": "Real-time IBM i database replication to cloud analytics and disaster recovery targets."
+  },
+  {
+    "from": "repl_logical_isv",
+    "to": "os_ibmi",
+    "kind": "optional",
+    "mechanism": "journal_reader",
+    "lane": "replication",
+    "status": "partner",
+    "summary": "MIMIX / Maxava journal reader runs on IBM i, replicating Db2 for i database journals and IFS objects in real time.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ha-dr-mechanisms#logical-rep",
+    "sellerNote": "Proven enterprise replication standard supporting cross-version and heterogeneous hardware migrations."
+  },
+  {
+    "from": "mig_falconstor",
+    "to": "os_aix",
+    "kind": "platform",
+    "mechanism": "vtl_seed_restore",
+    "lane": "migration",
+    "status": "partner",
+    "summary": "FalconStor VTL pre-seeds AIX rootvg and data volume saves from on-premises tape repositories into PowerVS for low-downtime cutover.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-falconstor-vtl",
+    "sellerNote": "Compresses AIX migration cutover windows by seeding 99% of data before final maintenance window."
+  },
+  {
+    "from": "mig_falconstor",
+    "to": "os_ibmi",
+    "kind": "platform",
+    "mechanism": "vtl_seed_restore",
+    "lane": "migration",
+    "status": "partner",
+    "summary": "FalconStor VTL pre-seeds IBM i SAVLIB/SAVSYS saves from on-premises tape repositories into PowerVS for low-downtime cutover.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-falconstor-vtl",
+    "sellerNote": "Compresses IBM i migration cutover windows by seeding 99% of data before final maintenance window."
+  },
+  {
+    "from": "mig_brms_cos",
+    "to": "os_ibmi",
+    "kind": "native",
+    "mechanism": "brms_restore",
+    "lane": "migration",
+    "status": "ga",
+    "summary": "On-premises IBM i libraries saved to COS via BRMS/ICC are restored directly onto the target PowerVS IBM i instance.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ibmi-migration-brms-icc",
+    "sellerNote": "Zero-cost migration path using native IBM i tooling — no additional software licenses needed."
+  },
+  {
+    "from": "mig_mksysb_nim",
+    "to": "os_aix",
+    "kind": "native",
+    "mechanism": "nim_restore",
+    "lane": "migration",
+    "status": "ga",
+    "summary": "AIX mksysb rootvg images staged in COS are restored onto the target PowerVS AIX instance via NIM or direct image import.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-migrating-mksysb",
+    "sellerNote": "Guarantees 100% operational fidelity for existing AIX kernel tunings and installed software."
   }
 ]
