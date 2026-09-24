@@ -923,7 +923,7 @@
     "os": ["aix", "ibmi", "linux", "ocp"],
     "hub": false,
     "status": "ga",
-    "docsUrl": "https://cloud.ibm.com/docs/dl?topic=dl-get-started-with-ibm-cloud-dl",
+    "docsUrl": "https://cloud.ibm.com/docs/dl?topic=dl-models-for-diversity-and-redundancy-in-direct-link",
     "desc": "Dedicated private WAN connection from on-premises data centers or co-location facilities into IBM Cloud via IBM-managed PoPs. Direct Link 2.0 connections terminate on Transit Gateway, giving PowerVS workspaces sub-millisecond private access to on-premises resources without traversing the public internet.",
     "value": "Provides consistent, low-latency private connectivity between on-premises Power estates and PowerVS — essential for hybrid active-active database replication, large data migration, and regulated workloads that prohibit internet transit.",
     "questions": [

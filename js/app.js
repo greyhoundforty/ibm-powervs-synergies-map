@@ -99,12 +99,23 @@ function layout() {
   const width = rect.width;
   const height = rect.height;
   const laneCount = state.playOrder.length || 1;
-  const laneH = height / laneCount;
+
+  // Lane 0 (hub+hw) gets extra height; remaining lanes share the rest equally.
+  const hubLaneWeight = 1.6;
+  const totalWeight = hubLaneWeight + (laneCount - 1);
+  const baseH = height / totalWeight;
+  const laneHeights = state.playOrder.map((_, i) => i === 0 ? baseH * hubLaneWeight : baseH);
+  const laneTops = laneHeights.reduce((acc, h, i) => {
+    acc.push(i === 0 ? 0 : acc[i - 1] + laneHeights[i - 1]);
+    return acc;
+  }, []);
+
   const positions = new Map();
 
   els.lanes.innerHTML = "";
   state.playOrder.forEach((playId, i) => {
-    const top = i * laneH;
+    const top = laneTops[i];
+    const laneH = laneHeights[i];
     if (i % 2 === 1) {
       const strip = document.createElement("div");
       strip.className = "lane-strip";
@@ -128,9 +139,22 @@ function layout() {
     }
 
     const inLane = state.products.filter((p) => p.cat === cat?.id);
+    const hubNode = inLane.find((p) => p.hub);
+    const nonHub = inLane.filter((p) => !p.hub);
     const n = inLane.length;
-    
-    if (n === 1) {
+
+    if (hubNode && nonHub.length > 0) {
+      // Hub gets its own centered row at top of lane; siblings spread on a lower row.
+      const yHub = top + laneH * 0.28;
+      const yNodes = top + laneH * 0.72;
+      positions.set(hubNode.id, { x: width / 2, y: yHub });
+      const avail = width - padX * 2;
+      const step = nonHub.length > 1 ? avail / (nonHub.length - 1) : 0;
+      nonHub.forEach((p, idx) => {
+        const x = nonHub.length === 1 ? width / 2 : padX + idx * step;
+        positions.set(p.id, { x, y: yNodes });
+      });
+    } else if (n === 1) {
       positions.set(inLane[0].id, { x: width / 2, y: top + laneH / 2 + 6 });
     } else if (n === 2) {
       positions.set(inLane[0].id, { x: width * 0.34, y: top + laneH / 2 + 6 });
@@ -197,11 +221,11 @@ function drawConnections(positions) {
     const toProd = productById(conn.to);
 
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    const dx = p2.x - p1.x;
     const dy = p2.y - p1.y;
-    const cy1 = p1.y + dy * 0.5;
-    const cy2 = p1.y + dy * 0.5;
-    const d = `M ${p1.x} ${p1.y} C ${p1.x + dx * 0.05} ${cy1}, ${p2.x - dx * 0.05} ${cy2}, ${p2.x} ${p2.y}`;
+    // Vertical bezier: handles drop straight down from each endpoint.
+    // This keeps cross-lane curves clean regardless of horizontal distance.
+    const bend = Math.abs(dy) * 0.5;
+    const d = `M ${p1.x} ${p1.y} C ${p1.x} ${p1.y + bend}, ${p2.x} ${p2.y - bend}, ${p2.x} ${p2.y}`;
 
     path.setAttribute("d", d);
     path.setAttribute(
@@ -260,9 +284,13 @@ function applyHighlights() {
   const selectedOsTag = selected ? OS_NODE_MAP[selected] : null;
   const activeOs = state.osFilter || selectedOsTag || null;
 
+  // The OS node id for the active OS (e.g. "os_aix" when activeOs = "aix")
+  const OS_ID_FOR_TAG = { aix: "os_aix", ibmi: "os_ibmi", linux: "os_linux", ocp: "os_ocp" };
+  const activeOsNodeId = activeOs ? OS_ID_FOR_TAG[activeOs] : null;
+
   // Build neighbor set from graph edges (used when no OS-node is selected)
   const graphConns = selected && !selectedOsTag
-    ? connectionsFor(selected, null) // get all lane connections, filter later
+    ? connectionsFor(selected, null)
     : [];
   const graphNeighborIds = new Set(
     graphConns.flatMap((c) => [c.from, c.to]).filter((id) => id !== selected)
@@ -270,12 +298,14 @@ function applyHighlights() {
 
   // When an OS node is selected or a chip is active, "neighbors" = all products
   // sharing that OS tag (excluding the OS node itself).
-  // If laneFilter is also active, further restrict to that lane.
+  // If laneFilter is also active, further restrict to that lane
+  // (and also exclude powervs-cat nodes — they sit above the OS ceiling).
   const osNeighborIds = activeOs
     ? new Set(
         state.products
           .filter((p) => {
             if (p.id === selected) return false;
+            if (p.cat === "powervs") return false; // above OS ceiling
             if (!productMatchesOs(p, activeOs)) return false;
             if (state.laneFilter && p.cat !== state.laneFilter) return false;
             return true;
@@ -290,6 +320,19 @@ function applyHighlights() {
     : graphNeighborIds;
 
   const neighborIds = osNeighborIds ?? filteredGraphNeighborIds;
+
+  // Default-view edge set: only hub→hw edges shown when nothing is selected.
+  // hub→os lines cross the hw row and look tangled; OS connections revealed on interaction.
+  const defaultEdgePairs = new Set(
+    state.connections
+      .filter((c) => {
+        const fromCat = productById(c.from)?.cat;
+        const toCat = productById(c.to)?.cat;
+        // Both ends must be powervs-cat (hub↔hw within the top lane only)
+        return fromCat === "powervs" && toCat === "powervs";
+      })
+      .map((c) => `${c.from}::${c.to}`)
+  );
 
   const nodes = els.nodes.querySelectorAll(".pnode");
   nodes.forEach((node) => {
@@ -307,10 +350,9 @@ function applyHighlights() {
 
     let dimmed = false;
     if (activeOs && state.laneFilter) {
-      // OS + lane: dim everything not selected and not in the filtered lane set
       dimmed = !isSel && !isNbr;
     } else if (activeOs) {
-      // OS only: dim nodes that don't match this OS
+      // OS only: show OS node + its OS-tagged peers; dim powervs-cat above it
       dimmed = !isSel && !inOs;
     } else if (selected) {
       dimmed = !isSel && !isNbr;
@@ -332,33 +374,30 @@ function applyHighlights() {
     let lit = false;
     let dimmed = false;
 
-    // Only powervs-cat nodes (the hub + hardware nodes) act as routing relays.
-    // Storage, backup, etc. nodes should never light up secondary edges.
+    // powervs-cat nodes are hub/hw — above the OS ceiling.
     const isRelay = (id) => productById(id)?.cat === "powervs";
 
     if (activeOs) {
       if (state.laneFilter) {
-        // Lane + OS: light a path only if one end is a visible lane neighbor
-        // and the other end is either also a lane neighbor, the selected OS node,
-        // or a powervs relay (hub/hw node).
+        // Lane + OS: a path lights if one end is a visible lane node and the
+        // other end is the active OS node (the ceiling). No hub above that.
         const fromInLane = neighborIds.has(from);
         const toInLane = neighborIds.has(to);
-        const fromOk = fromInLane || from === selected || isRelay(from);
-        const toOk = toInLane || to === selected || isRelay(to);
-        lit = (fromInLane || toInLane) && fromOk && toOk;
+        const fromIsOsNode = from === activeOsNodeId || from === selected;
+        const toIsOsNode = to === activeOsNodeId || to === selected;
+        lit = (fromInLane && toIsOsNode) || (toInLane && fromIsOsNode);
       } else {
-        // OS only: light edges between any two OS-matching nodes,
-        // but only allow powervs-cat nodes as relays (not e.g. COS relaying backups).
-        const fromMatch = from === selected || neighborIds.has(from) || isRelay(from);
-        const toMatch = to === selected || neighborIds.has(to) || isRelay(to);
-        // At least one end must be a real OS neighbor (not just a relay)
-        const hasRealEnd = neighborIds.has(from) || neighborIds.has(to) || from === selected || to === selected;
-        lit = fromMatch && toMatch && hasRealEnd;
+        // OS only: light edges from the OS node to each OS-tagged peer.
+        // No relay through powervs hub — lines terminate at the OS node.
+        const fromIsOsNode = from === activeOsNodeId || from === selected;
+        const toIsOsNode = to === activeOsNodeId || to === selected;
+        const fromInOs = neighborIds.has(from);
+        const toInOs = neighborIds.has(to);
+        lit = (fromIsOsNode && toInOs) || (toIsOsNode && fromInOs);
       }
       dimmed = !lit;
     } else if (selected) {
-      // Graph-edge mode: suppress edges going up to the PowerVS hub or hw nodes
-      // unless the selected node IS a powervs-cat node.
+      // Graph-edge mode: suppress edges to/from powervs hub unless selected IS powervs.
       const selectedCat = productById(selected)?.cat;
       const suppressHub = selectedCat !== "powervs";
       const fromHub = suppressHub && isRelay(from);
@@ -368,10 +407,26 @@ function applyHighlights() {
         (to === selected && filteredGraphNeighborIds.has(from))
       );
       dimmed = !lit;
+    } else {
+      // Default idle view: only show hub→hw and hub→os edges; hide everything else.
+      const edgeKey = `${from}::${to}`;
+      const inDefault = defaultEdgePairs.has(edgeKey);
+      if (q) {
+        // Search overrides: don't hide/show based on default set
+        lit = false;
+        dimmed = false;
+      } else {
+        lit = false;
+        dimmed = !inDefault;
+      }
     }
 
     path.classList.toggle("is-lit", lit);
     path.classList.toggle("is-dimmed", dimmed);
+    // Idle-visible paths: visible but not "lit" (blue). Only in default, no-selection state.
+    const isIdle = !selected && !state.osFilter && !q &&
+      defaultEdgePairs.has(`${from}::${to}`) && !lit && !dimmed;
+    path.classList.toggle("is-idle", isIdle);
   });
 }
 

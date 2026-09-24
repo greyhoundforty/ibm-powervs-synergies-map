@@ -388,6 +388,11 @@ body {
   stroke-dasharray: none !important;
 }
 
+.conn-path.is-idle {
+  opacity: 0.55 !important;
+  stroke-width: 1.5 !important;
+}
+
 .conn-path.is-dimmed {
   opacity: 0.04 !important;
 }

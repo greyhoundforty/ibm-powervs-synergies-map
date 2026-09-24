@@ -77,6 +77,128 @@
     "sellerNote": "Enables modern cloud-native container workloads directly adjacent to core transactional databases on Power."
   },
   {
+    "from": "hw_power11",
+    "to": "os_aix",
+    "kind": "native",
+    "mechanism": "pvm_hardware_os",
+    "lane": "os",
+    "status": "ga",
+    "summary": "Power11 hardware supports AIX 7.2 and 7.3 LPARs with next-generation AI acceleration and enhanced SMT capabilities.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-aix-vm-creation",
+    "sellerNote": "Recommended for new AIX deployments requiring the latest IBM Power architecture."
+  },
+  {
+    "from": "hw_power11",
+    "to": "os_ibmi",
+    "kind": "native",
+    "mechanism": "pvm_hardware_os",
+    "lane": "os",
+    "status": "ga",
+    "summary": "Power11 hardware supports IBM i 7.3, 7.4, and 7.5 instances with full software tier and VSN compatibility.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ibmi-configure",
+    "sellerNote": "Future-proof IBM i deployments on the latest IBM Power architecture."
+  },
+  {
+    "from": "hw_power11",
+    "to": "os_linux",
+    "kind": "native",
+    "mechanism": "pvm_hardware_os",
+    "lane": "os",
+    "status": "ga",
+    "summary": "Power11 hardware supports RHEL and SLES Linux LPARs including SAP HANA and SAP NetWeaver certified configurations.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-linux-vm-creation",
+    "sellerNote": "Ideal for SAP and cloud-native Linux workloads on the latest Power generation."
+  },
+  {
+    "from": "hw_power11",
+    "to": "os_ocp",
+    "kind": "native",
+    "mechanism": "pvm_hardware_os",
+    "lane": "os",
+    "status": "ga",
+    "summary": "Power11 hardware supports Red Hat OpenShift Container Platform clusters co-located with AIX and IBM i workloads.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-redhat-openshift-power",
+    "sellerNote": "Enable modern containerised workloads adjacent to core transactional databases on Power11."
+  },
+  {
+    "from": "hw_power10",
+    "to": "os_aix",
+    "kind": "native",
+    "mechanism": "pvm_hardware_os",
+    "lane": "os",
+    "status": "ga",
+    "summary": "Power10 hardware supports AIX 7.2 and 7.3 LPARs — the standard generation across all IBM Cloud data centers.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-aix-vm-creation",
+    "sellerNote": "Standard choice for AIX deployments across all PowerVS regions."
+  },
+  {
+    "from": "hw_power10",
+    "to": "os_ibmi",
+    "kind": "native",
+    "mechanism": "pvm_hardware_os",
+    "lane": "os",
+    "status": "ga",
+    "summary": "Power10 hardware supports IBM i 7.3, 7.4, and 7.5 instances with full LPP bundle and VSN support.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ibmi-configure",
+    "sellerNote": "Standard IBM i platform for new cloud migrations and existing Power10 regions."
+  },
+  {
+    "from": "hw_power10",
+    "to": "os_linux",
+    "kind": "native",
+    "mechanism": "pvm_hardware_os",
+    "lane": "os",
+    "status": "ga",
+    "summary": "Power10 hardware supports RHEL and SLES Linux including SAP HANA certified profiles.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-linux-vm-creation",
+    "sellerNote": "Widely available across all IBM Cloud PowerVS data centers."
+  },
+  {
+    "from": "hw_power10",
+    "to": "os_ocp",
+    "kind": "native",
+    "mechanism": "pvm_hardware_os",
+    "lane": "os",
+    "status": "ga",
+    "summary": "Power10 hardware supports Red Hat OpenShift Container Platform deployments on Power.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-redhat-openshift-power",
+    "sellerNote": "Container platform on the standard PowerVS hardware generation."
+  },
+  {
+    "from": "hw_power9",
+    "to": "os_aix",
+    "kind": "native",
+    "mechanism": "pvm_hardware_os",
+    "lane": "os",
+    "status": "restricted",
+    "summary": "Power9 hardware supports AIX 7.2 and 7.3 LPARs for existing clients only — new deployments should target Power10 or Power11.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-aix-vm-creation",
+    "sellerNote": "Available only for existing PowerVS clients grandfathered on Power9 capacity."
+  },
+  {
+    "from": "hw_power9",
+    "to": "os_ibmi",
+    "kind": "native",
+    "mechanism": "pvm_hardware_os",
+    "lane": "os",
+    "status": "restricted",
+    "summary": "Power9 hardware supports IBM i for existing clients only — new IBM i deployments require Power10 or Power11.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-ibmi-configure",
+    "sellerNote": "Restricted to existing Power9 clients. Guide prospects toward Power10/Power11."
+  },
+  {
+    "from": "hw_power9",
+    "to": "os_linux",
+    "kind": "native",
+    "mechanism": "pvm_hardware_os",
+    "lane": "os",
+    "status": "restricted",
+    "summary": "Power9 hardware supports Linux (RHEL/SLES) for existing clients only.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-linux-vm-creation",
+    "sellerNote": "Restricted to existing Power9 clients. New Linux deployments should use Power10 or Power11."
+  },
+
+  {
     "from": "powervs_offprem",
     "to": "storage_tier1",
     "kind": "native",
@@ -469,8 +591,8 @@
     "lane": "cloud_services",
     "status": "ga",
     "summary": "Direct Link 2.0 connections attach to Transit Gateway as a network connection, advertising on-premises routes into PowerVS and VPC workspaces over a dedicated private circuit.",
-    "docsUrl": "https://cloud.ibm.com/docs/dl?topic=dl-get-started-with-ibm-cloud-dl",
-    "sellerNote": "Single Direct Link attachment on TGW provides private reachability to PowerVS, VPC, and Classic — no separate connections per service."
+    "docsUrl": "https://cloud.ibm.com/docs/dl?topic=dl-models-for-diversity-and-redundancy-in-direct-link",
+    "sellerNote": "Single Direct Link attachment on TGW provides private reachability to PowerVS, VPC, and Classic — no separate connections per service. For HA designs see diversity and redundancy models."
   },
   {
     "from": "powervs_offprem",
@@ -480,8 +602,8 @@
     "lane": "cloud_services",
     "status": "ga",
     "summary": "PowerVS workspaces reach on-premises networks via PER → Transit Gateway → Direct Link 2.0, providing a fully private path for hybrid replication and migration traffic.",
-    "docsUrl": "https://cloud.ibm.com/docs/dl?topic=dl-get-started-with-ibm-cloud-dl",
-    "sellerNote": "Required for PowerHA cross-site DR, MIMIX/GRS replication, and large-scale mksysb / BRMS migration data transfers that cannot traverse the internet."
+    "docsUrl": "https://cloud.ibm.com/docs/dl?topic=dl-alternatives-for-your-ibm-cloud-direct-link-deployment",
+    "sellerNote": "Required for PowerHA cross-site DR, MIMIX/GRS replication, and large-scale mksysb / BRMS migration data transfers that cannot traverse the internet. Review deployment alternatives for redundant circuit design."
   },
   {
     "from": "cloud_transit_gateway",
