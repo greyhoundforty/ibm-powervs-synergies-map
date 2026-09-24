@@ -819,3 +819,296 @@ body {
   clip: rect(0, 0, 0, 0);
   border: 0;
 }
+
+/* ---------------------------------------------------------------------------
+   View switch toggle (Map / Grid)
+--------------------------------------------------------------------------- */
+.view-switch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--cds-layer-accent-01);
+  border-radius: 4px;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.view-btn {
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--cds-text-secondary);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+
+.view-btn:hover {
+  color: var(--cds-text-primary);
+  background: var(--cds-background-hover);
+}
+
+.view-btn.is-active {
+  background: var(--cds-layer-02);
+  color: var(--cds-text-primary);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+/* ---------------------------------------------------------------------------
+   Grid view — layout shell
+--------------------------------------------------------------------------- */
+
+/* Hide map-area when grid mode is active */
+#main.is-grid-mode #map-area { display: none; }
+#main.is-grid-mode #grid-area { display: flex; }
+
+#grid-area {
+  display: none; /* shown only when is-grid-mode */
+  flex: 1;
+  overflow: hidden;
+  background: var(--cds-background);
+}
+
+/* ---------------------------------------------------------------------------
+   Grid view — OS column (left)
+--------------------------------------------------------------------------- */
+
+.grid-os-col {
+  display: flex;
+  flex-direction: column;
+  width: 160px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--cds-border-subtle-01);
+  background: var(--cds-layer-01);
+  overflow-y: auto;
+}
+
+.grid-col-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 16px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--cds-text-helper);
+  border-bottom: 1px solid var(--cds-border-subtle-01);
+  background: var(--cds-layer-01);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+.grid-col-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--col-color, var(--cds-interactive));
+  flex-shrink: 0;
+}
+
+.grid-os-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 10px;
+}
+
+.grid-os-btn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  border: 1.5px solid var(--cds-border-subtle-02);
+  border-radius: 4px;
+  background: var(--cds-layer-02);
+  color: var(--cds-text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.14s ease;
+  position: relative;
+}
+
+.grid-os-btn::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--os-color, var(--cds-interactive));
+  margin-right: 9px;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.14s;
+}
+
+.grid-os-btn:hover {
+  border-color: var(--os-color, var(--cds-interactive));
+  background: var(--cds-background-hover);
+}
+
+.grid-os-btn.is-active {
+  border-color: var(--os-color, var(--cds-interactive));
+  border-width: 2px;
+  background: color-mix(in srgb, var(--os-color, var(--cds-interactive)) 18%, var(--cds-layer-01));
+  color: var(--cds-text-primary);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--os-color, var(--cds-interactive));
+}
+
+.grid-os-btn.is-active::before {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   Grid view — integration columns (right)
+--------------------------------------------------------------------------- */
+
+.grid-integ-cols {
+  display: flex;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 0;
+}
+
+.grid-cat-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  flex: 1;
+  border-right: 1px solid var(--cds-border-subtle-01);
+  overflow-y: auto;
+  background: var(--cds-background);
+}
+
+.grid-cat-col:last-child {
+  border-right: none;
+}
+
+.grid-col-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   Grid view — integration cards
+--------------------------------------------------------------------------- */
+
+.grid-card {
+  padding: 9px 11px;
+  border-radius: 4px;
+  border-top: 1.5px solid var(--cds-border-subtle-01);
+  border-right: 1.5px solid var(--cds-border-subtle-01);
+  border-bottom: 1.5px solid var(--cds-border-subtle-01);
+  border-left: 3px solid var(--card-color, var(--cds-interactive));
+  background: var(--cds-layer-01);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, opacity 0.15s, box-shadow 0.15s;
+}
+
+.grid-card:hover {
+  border-top-color: var(--card-color, var(--cds-interactive));
+  border-right-color: var(--card-color, var(--cds-interactive));
+  border-bottom-color: var(--card-color, var(--cds-interactive));
+  background: var(--cds-background-hover);
+}
+
+.grid-card-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cds-text-primary);
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.grid-card-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--play-4) 15%, transparent);
+  color: var(--play-4);
+  border: 1px solid color-mix(in srgb, var(--play-4) 35%, transparent);
+  margin-bottom: 4px;
+  margin-right: 4px;
+}
+
+.grid-card-badge.is-restricted {
+  background: color-mix(in srgb, #f1c21b 12%, transparent);
+  color: #b28600;
+  border-color: color-mix(in srgb, #f1c21b 40%, transparent);
+}
+
+[data-theme="dark"] .grid-card-badge.is-restricted {
+  color: #f1c21b;
+}
+
+.grid-card-os {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 5px;
+}
+
+.grid-card-os-pip {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+  opacity: 0.65;
+  white-space: nowrap;
+}
+
+/* Highlight states */
+.grid-card.is-highlighted {
+  border-top-color: var(--card-color, var(--cds-interactive));
+  border-right-color: var(--card-color, var(--cds-interactive));
+  border-bottom-color: var(--card-color, var(--cds-interactive));
+  background: color-mix(in srgb, var(--card-color, var(--cds-interactive)) 10%, var(--cds-layer-01));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--card-color, var(--cds-interactive)) 40%, transparent),
+              0 2px 8px rgba(0,0,0,0.10);
+}
+
+.grid-card.is-highlighted .grid-card-os-pip {
+  opacity: 1;
+}
+
+.grid-card.is-dimmed {
+  opacity: 0.22;
+  filter: grayscale(0.4);
+}
+
+/* Dark theme card tweaks */
+[data-theme="dark"] .grid-card {
+  background: var(--cds-layer-01);
+  border-top-color: var(--cds-border-subtle-02);
+  border-right-color: var(--cds-border-subtle-02);
+  border-bottom-color: var(--cds-border-subtle-02);
+}
+
+[data-theme="dark"] .grid-card.is-highlighted {
+  background: color-mix(in srgb, var(--card-color, var(--cds-interactive)) 14%, var(--cds-layer-01));
+  border-top-color: var(--card-color, var(--cds-interactive));
+  border-right-color: var(--card-color, var(--cds-interactive));
+  border-bottom-color: var(--card-color, var(--cds-interactive));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--card-color, var(--cds-interactive)) 50%, transparent),
+              0 2px 12px rgba(0,0,0,0.35);
+}

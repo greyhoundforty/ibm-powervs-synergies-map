@@ -21,6 +21,7 @@ const state = {
   laneFilter: null,
   osFilter: null,
   chromeBound: false,
+  viewMode: "grid", // "map" | "grid"
 };
 
 const els = {
@@ -398,9 +399,11 @@ function applyHighlights() {
       }
       dimmed = !lit;
     } else if (selected) {
-      // Graph-edge mode: suppress edges to/from powervs hub unless selected IS powervs.
+      // Graph-edge mode: light all direct edges of the selected node.
+      // Only suppress hub as a relay when it is NOT a direct neighbor of the selection.
       const selectedCat = productById(selected)?.cat;
-      const suppressHub = selectedCat !== "powervs";
+      const isDirectHubEdge = (from === selected && isRelay(to)) || (to === selected && isRelay(from));
+      const suppressHub = selectedCat !== "powervs" && !isDirectHubEdge;
       const fromHub = suppressHub && isRelay(from);
       const toHub = suppressHub && isRelay(to);
       lit = !fromHub && !toHub && (
@@ -631,6 +634,198 @@ function renderLegend() {
   });
 }
 
+function renderViewSwitch() {
+  if (!els.viewSwitch) return;
+  const modes = [
+    { id: "map",  label: "Map" },
+    { id: "grid", label: "Grid" },
+  ];
+  els.viewSwitch.innerHTML = modes.map(({ id, label }) => {
+    const active = state.viewMode === id;
+    return `<button type="button" class="view-btn${active ? " is-active" : ""}" data-view="${id}" aria-pressed="${active}">${label}</button>`;
+  }).join("");
+
+  els.viewSwitch.querySelectorAll(".view-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.viewMode = btn.dataset.view;
+      renderViewSwitch();
+      if (state.viewMode === "grid") {
+        document.getElementById("main").classList.add("is-grid-mode");
+        renderGridView();
+      } else {
+        document.getElementById("main").classList.remove("is-grid-mode");
+        layout();
+      }
+    });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Grid view
+// ---------------------------------------------------------------------------
+
+// Categories shown as integration columns (skip powervs hub lane)
+const GRID_INTEGRATION_CATS = ["storage", "backups", "replication", "migration", "cloud_services"];
+
+function renderGridView() {
+  const main = document.getElementById("main");
+  // Remove old grid area if present
+  let grid = document.getElementById("grid-area");
+  if (!grid) {
+    grid = document.createElement("div");
+    grid.id = "grid-area";
+    // Insert before sidebar
+    const sidebar = document.getElementById("sidebar");
+    main.insertBefore(grid, sidebar);
+  }
+  grid.innerHTML = "";
+
+  // --- Left: OS column ---
+  const osCol = document.createElement("div");
+  osCol.className = "grid-os-col";
+
+  const osHeading = document.createElement("div");
+  osHeading.className = "grid-col-heading";
+  osHeading.textContent = "Operating System";
+  osCol.appendChild(osHeading);
+
+  const osBody = document.createElement("div");
+  osBody.className = "grid-os-body";
+
+  const ALL_OS = [
+    { id: "aix",   label: "AIX",       color: "#3ddbd9" },
+    { id: "ibmi",  label: "IBM i",     color: "#4589ff" },
+    { id: "linux", label: "Linux",     color: "#42be65" },
+    { id: "ocp",   label: "OpenShift", color: "#ff832b" },
+  ];
+
+  ALL_OS.forEach(({ id, label, color }) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "grid-os-btn";
+    btn.dataset.os = id;
+    btn.style.setProperty("--os-color", color);
+    btn.setAttribute("aria-pressed", state.osFilter === id ? "true" : "false");
+    if (state.osFilter === id) btn.classList.add("is-active");
+    btn.textContent = label;
+    btn.addEventListener("click", () => {
+      state.osFilter = state.osFilter === id ? null : id;
+      state.selectedId = null;
+      applyGridHighlights();
+      // Sync the OS chips in the header bar too
+      renderOsFilter();
+    });
+    osBody.appendChild(btn);
+  });
+
+  osCol.appendChild(osBody);
+  grid.appendChild(osCol);
+
+  // --- Right: integration columns ---
+  const integCols = document.createElement("div");
+  integCols.className = "grid-integ-cols";
+
+  GRID_INTEGRATION_CATS.forEach((catId) => {
+    const cat = state.categories.find((c) => c.id === catId);
+    if (!cat) return;
+    const play = Object.values(state.plays).find((p) => p.cat === catId);
+    const products = state.products.filter((p) => p.cat === catId);
+    if (products.length === 0) return;
+
+    const col = document.createElement("div");
+    col.className = "grid-cat-col";
+    col.dataset.cat = catId;
+
+    const heading = document.createElement("div");
+    heading.className = "grid-col-heading";
+    if (play) {
+      heading.style.setProperty("--col-color", `var(--play-${play.id})`);
+    }
+    heading.innerHTML = `<span class="grid-col-dot" style="background:var(--col-color)"></span>${escapeHtml(cat.label)}`;
+    col.appendChild(heading);
+
+    const body = document.createElement("div");
+    body.className = "grid-col-body";
+
+    products.forEach((product) => {
+      const card = document.createElement("div");
+      card.className = "grid-card";
+      card.dataset.id = product.id;
+      card.dataset.cat = catId;
+      if (play) card.style.setProperty("--card-color", `var(--play-${play.id})`);
+
+      const name = document.createElement("div");
+      name.className = "grid-card-name";
+      name.textContent = product.label;
+      card.appendChild(name);
+
+      if (product.status === "partner") {
+        const badge = document.createElement("span");
+        badge.className = "grid-card-badge";
+        badge.textContent = "Partner";
+        card.appendChild(badge);
+      }
+      if (product.status === "restricted") {
+        const badge = document.createElement("span");
+        badge.className = "grid-card-badge is-restricted";
+        badge.textContent = "Existing clients";
+        card.appendChild(badge);
+      }
+
+      // Show which OSes this card supports as mini pills
+      if (product.os && product.os.length > 0) {
+        const osPills = document.createElement("div");
+        osPills.className = "grid-card-os";
+        const OS_COLOR = { aix: "#3ddbd9", ibmi: "#4589ff", linux: "#42be65", ocp: "#ff832b" };
+        const OS_SHORT = { aix: "AIX", ibmi: "i", linux: "Lin", ocp: "OCP" };
+        product.os.forEach((o) => {
+          const pip = document.createElement("span");
+          pip.className = "grid-card-os-pip";
+          pip.style.color = OS_COLOR[o] || "currentColor";
+          pip.style.borderColor = OS_COLOR[o] || "currentColor";
+          pip.textContent = OS_SHORT[o] || o;
+          osPills.appendChild(pip);
+        });
+        card.appendChild(osPills);
+      }
+
+      card.addEventListener("click", () => selectProduct(product.id));
+      body.appendChild(card);
+    });
+
+    col.appendChild(body);
+    integCols.appendChild(col);
+  });
+
+  grid.appendChild(integCols);
+  applyGridHighlights();
+}
+
+function applyGridHighlights() {
+  const grid = document.getElementById("grid-area");
+  if (!grid) return;
+
+  const activeOs = state.osFilter;
+
+  // Update OS button pressed states
+  grid.querySelectorAll(".grid-os-btn").forEach((btn) => {
+    const active = btn.dataset.os === activeOs;
+    btn.classList.toggle("is-active", active);
+    btn.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+
+  // Update card highlight states
+  grid.querySelectorAll(".grid-card").forEach((card) => {
+    const id = card.dataset.id;
+    const product = productById(id);
+    if (!product) return;
+
+    const matches = !activeOs || productMatchesOs(product, activeOs);
+    card.classList.toggle("is-highlighted", Boolean(activeOs && matches));
+    card.classList.toggle("is-dimmed", Boolean(activeOs && !matches));
+  });
+}
+
 function renderFooter() {
   const nProd = state.products.length;
   const nConn = state.connections.length;
@@ -692,7 +887,9 @@ function bindChrome() {
     els.search.focus();
   });
 
-  window.addEventListener("resize", () => layout());
+  window.addEventListener("resize", () => {
+    if (state.viewMode === "map") layout();
+  });
 }
 
 async function load() {
@@ -713,11 +910,14 @@ async function load() {
   state.laneFilter = null;
 
   bindChrome();
+  renderViewSwitch();
   renderLegend();
   renderOsFilter();
   renderFooter();
   renderSidebar();
-  layout();
+  // Default view is grid; map is rendered on demand when switching to it
+  document.getElementById("main").classList.add("is-grid-mode");
+  renderGridView();
 }
 
 load().catch((err) => {
