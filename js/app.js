@@ -523,6 +523,44 @@ function renderSidebar() {
     </div>
 
     ${
+      selected.supportedVersions && selected.supportedVersions.length > 0
+        ? `
+      <div class="sb-section">
+        <div class="sb-section-title">
+          Supported Versions
+          <a class="sb-section-docs-link" href="${escapeHtml(selected.docsUrl)}" target="_blank" rel="noopener noreferrer" title="IBM Documentation">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M10 2v1.5h2.44L6.97 9.03l1.06 1.06 5.47-5.47V7H15V2h-5z"/><path d="M13 13.5H3v-10h4.5V2H3a1.5 1.5 0 0 0-1.5 1.5v10A1.5 1.5 0 0 0 3 15h10a1.5 1.5 0 0 0 1.5-1.5V9h-1.5v4.5z"/></svg>
+          </a>
+        </div>
+        <table class="sb-tier-table">
+          <thead>
+            <tr>
+              <th>Version</th>
+              <th>Min TL / TR</th>
+              <th>Hardware</th>
+              <th>Stock Image</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${selected.supportedVersions.map((v) => `
+              <tr>
+                <td><span class="sb-tier-badge sb-version-badge">${escapeHtml(v.version)}</span></td>
+                <td>${escapeHtml(v.tls)}</td>
+                <td style="font-size:11px">${escapeHtml(v.hardware)}</td>
+                <td>${v.stockImage ? '<span class="sb-version-yes">✓ Yes</span>' : '<span class="sb-version-no">BYOL</span>'}</td>
+              </tr>
+              <tr class="sb-tier-notes-row">
+                <td colspan="4">${escapeHtml(v.notes)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `
+        : ""
+    }
+
+    ${
       selected.softwareTiers && selected.softwareTiers.length > 0
         ? `
       <div class="sb-section">
@@ -731,13 +769,13 @@ function renderGridView() {
   osBody.className = "grid-os-body";
 
   const ALL_OS = [
-    { id: "aix",   label: "AIX",       color: "#3ddbd9" },
-    { id: "ibmi",  label: "IBM i",     color: "#4589ff" },
-    { id: "linux", label: "Linux",     color: "#42be65" },
-    { id: "ocp",   label: "OpenShift", color: "#ff832b" },
+    { id: "aix",   label: "AIX",       color: "#3ddbd9", nodeId: "os_aix"   },
+    { id: "ibmi",  label: "IBM i",     color: "#4589ff", nodeId: "os_ibmi"  },
+    { id: "linux", label: "Linux",     color: "#42be65", nodeId: "os_linux" },
+    { id: "ocp",   label: "OpenShift", color: "#ff832b", nodeId: "os_ocp"   },
   ];
 
-  ALL_OS.forEach(({ id, label, color }) => {
+  ALL_OS.forEach(({ id, label, color, nodeId }) => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "grid-os-btn";
@@ -747,9 +785,14 @@ function renderGridView() {
     if (state.osFilter === id) btn.classList.add("is-active");
     btn.textContent = label;
     btn.addEventListener("click", () => {
-      state.osFilter = state.osFilter === id ? null : id;
-      state.selectedId = null;
+      const toggling = state.osFilter === id;
+      state.osFilter = toggling ? null : id;
+      // Select the OS product node to open its detail in the sidebar
+      state.selectedId = toggling ? null : nodeId;
       applyGridHighlights();
+      renderSidebar();
+      // Show/hide sidebar panel based on selection
+      document.getElementById("sidebar").classList.toggle("is-open", !toggling);
       // Sync the OS chips in the header bar too
       renderOsFilter();
     });
@@ -827,7 +870,10 @@ function renderGridView() {
         card.appendChild(osPills);
       }
 
-      card.addEventListener("click", () => selectProduct(product.id));
+      card.addEventListener("click", () => {
+        selectProduct(product.id);
+        document.getElementById("sidebar").classList.add("is-open");
+      });
       body.appendChild(card);
     });
 
@@ -900,6 +946,11 @@ function bindChrome() {
     renderOsFilter();
     renderSidebar();
     applyHighlights();
+    // In grid mode: close sidebar and sync OS button states
+    document.getElementById("sidebar").classList.remove("is-open");
+    if (state.viewMode === "grid") {
+      applyGridHighlights();
+    }
   });
 
   els.search.addEventListener("input", () => {

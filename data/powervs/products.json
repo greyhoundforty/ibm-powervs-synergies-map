@@ -117,13 +117,14 @@
     "hub": false,
     "status": "ga",
     "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-aix-vm-creation",
-    "desc": "Enterprise UNIX operating system (AIX 7.2, 7.3) on PowerVS. Includes IBM stock images, custom image import (mksysb/OVA), SUMA patch management, and RSCT/RMC cluster integration.",
-    "value": "Provides mission-critical reliability, security, and binary compatibility for Oracle Database, SAP NetWeaver, and custom UNIX enterprise applications.",
+    "desc": "Enterprise UNIX operating system on PowerVS — AIX 7.1 (minimum), 7.2, and 7.3 are supported. IBM-provided stock images are available for 7.2 and 7.3. Custom images (mksysb / OVA) can be imported from any supported version. Includes SUMA patch management and RSCT/RMC cluster integration.",
+    "value": "Provides mission-critical reliability, security, and binary compatibility for Oracle Database, SAP NetWeaver, and custom UNIX enterprise applications. Migrate existing AIX LPARs to PowerVS without re-compiling or re-architecting applications.",
     "questions": [
-      "Which versions of AIX (7.1, 7.2, 7.3) are currently running on-premises?",
+      "Which AIX version (7.1, 7.2, 7.3) and Technology Level are your on-premises LPARs currently running?",
       "Are you running enterprise databases like Oracle, Db2, or Sybase on AIX?",
-      "Do you manage systems with NIM (Network Installation Management) or SUMA?",
-      "Do you require high availability with PowerHA SystemMirror?"
+      "Do you manage systems with NIM (Network Installation Management) or SUMA for patch management?",
+      "Do you require high availability with PowerHA SystemMirror?",
+      "Are you running AIX 6.1 or earlier? (Must upgrade to 7.1+ before migrating to PowerVS)"
     ],
     "competitors": [
       "Solaris on SPARC",
@@ -133,7 +134,31 @@
     "differentiators": [
       "Decades of binary backward compatibility without recompiling binaries",
       "Dynamic LPAR reconfiguration of CPU and RAM without downtime",
-      "Native IBM Cloud stock images with cloud-init customization"
+      "Native IBM Cloud stock images for AIX 7.2 and 7.3 with cloud-init customization",
+      "Bring-your-own mksysb or OVA image for any supported version including 7.1"
+    ],
+    "supportedVersions": [
+      {
+        "version": "AIX 7.3",
+        "tls": "TL2 SP2, TL3 SP0+",
+        "stockImage": true,
+        "hardware": "Power9, Power10, Power11",
+        "notes": "Current recommended version. Latest stock images available. Full support for all PowerVS features."
+      },
+      {
+        "version": "AIX 7.2",
+        "tls": "TL5 SP8+",
+        "stockImage": true,
+        "hardware": "Power9, Power10, Power11",
+        "notes": "Widely deployed production version. Stock images available. Upgrade path to 7.3 recommended for new deployments."
+      },
+      {
+        "version": "AIX 7.1",
+        "tls": "TL5+",
+        "stockImage": false,
+        "hardware": "Power9, Power10",
+        "notes": "Minimum supported version. No IBM stock image — bring-your-own mksysb or OVA required. Upgrade to 7.2/7.3 recommended."
+      }
     ]
   },
   {
@@ -192,6 +217,43 @@
         "maxRam": "Unlimited",
         "licensing": "Per-core only",
         "notes": "Enterprise tier. No vCPU or RAM caps. Enterprise Edition bundle (P30 Enterprise Edition) available from July 2025."
+      }
+    ],
+    "supportedVersions": [
+      {
+        "version": "IBM i 7.6",
+        "tls": "Base release",
+        "stockImage": true,
+        "hardware": "Power10, Power11",
+        "notes": "Latest IBM i release. Power10 and Power11 only. Check IBM for current TR level availability."
+      },
+      {
+        "version": "IBM i 7.5",
+        "tls": "TR5+",
+        "stockImage": true,
+        "hardware": "Power10, Power11",
+        "notes": "Current mainstream production release. Recommended for new deployments on Power10/Power11."
+      },
+      {
+        "version": "IBM i 7.4",
+        "tls": "TR11+",
+        "stockImage": true,
+        "hardware": "Power9, Power10, Power11",
+        "notes": "Widely deployed. TR11 or later required before migrating to Power10/Power11."
+      },
+      {
+        "version": "IBM i 7.3",
+        "tls": "TR11+",
+        "stockImage": true,
+        "hardware": "Power9, Power10",
+        "notes": "Still supported. TR11 or later required. Plan upgrade to 7.4 or 7.5 for Power11 compatibility."
+      },
+      {
+        "version": "IBM i COR",
+        "tls": "Cloud Optical Repository",
+        "stockImage": true,
+        "hardware": "Power10, Power11",
+        "notes": "Cloud-hosted licensed software repository for IBM i. Enables online software installation without physical media."
       }
     ]
   },
