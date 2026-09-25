@@ -960,20 +960,19 @@ body {
 #main.is-grid-mode #map-area { display: none; }
 #main.is-grid-mode #grid-area { display: flex; }
 
-/* Sidebar in grid mode: hidden by default, slides in on .is-open */
+/* Sidebar in grid mode: collapses to zero width, expands in-flow on .is-open */
 #main.is-grid-mode #sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  height: 100%;
-  z-index: 100;
-  box-shadow: -4px 0 24px rgba(0,0,0,0.25);
-  transform: translateX(100%);
-  transition: transform 0.22s ease;
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  border-left: none;
+  transition: width 0.22s ease, min-width 0.22s ease;
 }
 
 #main.is-grid-mode #sidebar.is-open {
-  transform: translateX(0);
+  width: 360px;
+  min-width: 360px;
+  border-left: 1px solid var(--cds-border-subtle-01);
 }
 
 #grid-area {
