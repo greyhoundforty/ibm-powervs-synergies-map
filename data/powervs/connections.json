@@ -813,5 +813,38 @@
     "summary": "AIX mksysb rootvg images staged in COS are restored onto the target PowerVS AIX instance via NIM or direct image import.",
     "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-migrating-mksysb",
     "sellerNote": "Guarantees 100% operational fidelity for existing AIX kernel tunings and installed software."
+  },
+  {
+    "from": "powervs_offprem",
+    "to": "cloud_scc",
+    "kind": "platform",
+    "mechanism": "cspm_workspace_integration",
+    "lane": "cloud_services",
+    "status": "ga",
+    "summary": "SCC Workload Protection integrates at the PowerVS workspace level via CSPM, and deploys host agents on AIX and Linux LPARs for continuous compliance and posture management.",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-integrate-hpcs",
+    "sellerNote": "CSPM is enabled by default in new PowerVS workspaces — highlight this to regulated-industry clients needing CIS, PCI, or DORA compliance automation on AIX and Linux."
+  },
+  {
+    "from": "cloud_scc",
+    "to": "os_aix",
+    "kind": "platform",
+    "mechanism": "workload_protection_agent",
+    "lane": "cloud_services",
+    "status": "ga",
+    "summary": "Workload Protection agent on AIX scans host configuration files against CIS AIX Benchmark for continuous posture compliance.",
+    "docsUrl": "https://cloud.ibm.com/docs/workload-protection?topic=workload-protection-agent-deploy-aix-powervs",
+    "sellerNote": "AIX agent covers posture management only — CIS AIX Benchmark scanning. Host vulnerability scanning and threat detection are Linux-only features."
+  },
+  {
+    "from": "cloud_scc",
+    "to": "os_linux",
+    "kind": "platform",
+    "mechanism": "workload_protection_agent",
+    "lane": "cloud_services",
+    "status": "ga",
+    "summary": "Workload Protection agent on Linux on Power provides posture management (CIS Linux Benchmark), host vulnerability scanning, and runtime threat detection via syscall event processing.",
+    "docsUrl": "https://cloud.ibm.com/docs/workload-protection?topic=workload-protection-agent-deploy-linux-powervs",
+    "sellerNote": "Full feature set on Linux: posture + host scanning + threat detection. Position for regulated Linux SAP HANA and RHEL workloads that require continuous runtime security monitoring."
   }
 ]

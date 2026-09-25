@@ -1071,5 +1071,36 @@
       "Required for sub-millisecond replication latency in PowerHA and Geographic Mirroring cross-site DR",
       "Supports BGP route filtering and MED tuning for granular hybrid routing control"
     ]
+  },
+  {
+    "id": "cloud_scc",
+    "label": "IBM Cloud Security & Compliance Center",
+    "cat": "cloud_services",
+    "plays": [6],
+    "os": ["aix", "linux"],
+    "hub": false,
+    "status": "ga",
+    "docsUrl": "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-integrate-hpcs",
+    "desc": "IBM Cloud Security and Compliance Center (SCC) Workload Protection provides continuous compliance, posture management, vulnerability scanning, and threat detection for PowerVS workloads. CSPM (Cloud Security Posture Management) is enabled at the PowerVS workspace level and covers AIX and Linux hosts. A Workload Protection agent is deployed directly on AIX and Linux LPARs for host-level security. IBM i is not supported by the Workload Protection agent.",
+    "value": "Automates continuous compliance validation against industry standards (CIS, PCI, DORA, IBM Cloud Framework for Financial Services) directly on Power workloads — closing the gap between cloud infrastructure controls and OS-level security posture.",
+    "questions": [
+      "Are your PowerVS AIX or Linux workloads subject to regulatory compliance frameworks such as PCI, DORA, or CIS benchmarks?",
+      "Do you need continuous automated compliance scanning rather than point-in-time audits?",
+      "Are you deploying PowerVS in a regulated industry (financial services, healthcare) where posture management is mandatory?",
+      "Do you require runtime threat detection and vulnerability prioritization on Linux on Power hosts?",
+      "Is CSPM enabled in your existing PowerVS workspace, or does it need to be added?"
+    ],
+    "competitors": [
+      "Qualys / Tenable on-prem vulnerability scanners",
+      "Manual CIS benchmark auditing",
+      "AWS Security Hub + Inspector",
+      "Azure Defender for Cloud"
+    ],
+    "differentiators": [
+      "CSPM enabled directly in the PowerVS workspace console — no separate toolchain deployment required",
+      "Workload Protection agent supports both AIX (CIS AIX Benchmark posture) and Linux (posture + host scanning + threat detection)",
+      "Linux agent adds runtime threat detection via syscall event processing not available in generic cloud security tools",
+      "Unified compliance dashboard covering IBM Cloud infrastructure controls and Power OS-level posture in one view"
+    ]
   }
 ]
