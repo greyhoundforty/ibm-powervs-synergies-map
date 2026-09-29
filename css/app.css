@@ -1078,6 +1078,22 @@ body {
   opacity: 1;
 }
 
+.grid-os-btn.is-query-hit {
+  border-color: var(--cds-interactive);
+  border-width: 2px;
+  background: color-mix(in srgb, var(--cds-interactive) 12%, var(--cds-layer-01));
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--cds-interactive);
+}
+
+.grid-os-btn.is-query-hit::before {
+  opacity: 1;
+}
+
+.grid-os-btn.is-dimmed {
+  opacity: 0.28;
+}
+
 /* ---------------------------------------------------------------------------
    Grid view — integration columns (right)
 --------------------------------------------------------------------------- */

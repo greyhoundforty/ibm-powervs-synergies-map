@@ -890,12 +890,28 @@ function applyGridHighlights() {
   if (!grid) return;
 
   const activeOs = state.osFilter;
+  const q = state.query ? state.query.trim().toLowerCase() : "";
 
-  // Update OS button pressed states
+  // When searching, find matched products and collect the OSes they support
+  let queryMatchIds = null;
+  let queryMatchOses = null;
+  if (q) {
+    const matched = state.products.filter((p) => matchesQuery(p, q));
+    queryMatchIds = new Set(matched.map((p) => p.id));
+    queryMatchOses = new Set(matched.flatMap((p) => p.os || []));
+  }
+
+  // Update OS button highlight states
   grid.querySelectorAll(".grid-os-btn").forEach((btn) => {
-    const active = btn.dataset.os === activeOs;
-    btn.classList.toggle("is-active", active);
-    btn.setAttribute("aria-pressed", active ? "true" : "false");
+    const osId = btn.dataset.os;
+    // Active = toggled on via click
+    const isActive = osId === activeOs;
+    btn.classList.toggle("is-active", isActive);
+    btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+    // Query hit = one of the matched products supports this OS
+    const isQueryHit = Boolean(q && queryMatchOses && queryMatchOses.has(osId));
+    btn.classList.toggle("is-query-hit", isQueryHit);
+    btn.classList.toggle("is-dimmed", Boolean(q && !isQueryHit));
   });
 
   // Update card highlight states
@@ -904,9 +920,19 @@ function applyGridHighlights() {
     const product = productById(id);
     if (!product) return;
 
-    const matches = !activeOs || productMatchesOs(product, activeOs);
-    card.classList.toggle("is-highlighted", Boolean(activeOs && matches));
-    card.classList.toggle("is-dimmed", Boolean(activeOs && !matches));
+    if (q) {
+      // Search mode: highlight matched cards, dim everything else
+      const isHit = queryMatchIds.has(id);
+      card.classList.toggle("is-highlighted", isHit);
+      card.classList.toggle("is-dimmed", !isHit);
+      card.classList.toggle("is-query-hit", isHit);
+    } else {
+      // OS filter mode (or idle)
+      card.classList.remove("is-query-hit");
+      const matches = !activeOs || productMatchesOs(product, activeOs);
+      card.classList.toggle("is-highlighted", Boolean(activeOs && matches));
+      card.classList.toggle("is-dimmed", Boolean(activeOs && !matches));
+    }
   });
 }
 
@@ -965,6 +991,7 @@ function bindChrome() {
       els.searchCount.hidden = true;
     }
     applyHighlights();
+    if (state.viewMode === "grid") applyGridHighlights();
   });
 
   els.searchClear.addEventListener("click", () => {
@@ -973,6 +1000,7 @@ function bindChrome() {
     els.searchClear.classList.remove("is-visible");
     els.searchCount.hidden = true;
     applyHighlights();
+    if (state.viewMode === "grid") applyGridHighlights();
     els.search.focus();
   });
 
