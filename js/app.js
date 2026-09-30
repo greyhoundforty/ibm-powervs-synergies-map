@@ -687,41 +687,177 @@ function bindChrome() {
 //
 // Self-contained layered diagram. Data does NOT come from products.json —
 // this topology is specific to the network path view. Rows flow top-to-bottom:
-//   Row 0 — Workload anchor (PowerVS)
+//   Row 0 — Workload anchor (PowerVS workspace + built-in Juniper vSRX ports)
 //   Row 1 — Connection intent  (Secure / Public)
-//   Row 2 — Entry mechanisms   (Direct Link, VPN, etc.)
-//   Row 3 — Routing & gateway  (TGW, Route Tables, Classic GW)
-//   Row 4 — Security controls  (NACLs, Security Groups, NSGs)
+//   Row 2 — Entry mechanisms   (Direct Link, VPN, Classic GW, Firewall,
+//                               VPC Public Gateway, VPC NLB Routing Mode)
+//   Row 3 — Routing & gateway  (TGW, VPC Route Tables)
+//   Row 4 — Security controls, split by plane:
+//             VPC plane  — VPC Network ACLs, VPC Security Groups
+//             PowerVS plane — PowerVS NSGs
 //
 // Clicking a node highlights it + all ancestors and descendants in the path.
 // ---------------------------------------------------------------------------
 
 const NET_NODES = [
   // Row 0 — anchor
-  { id: "pvs",          row: 0, label: "PowerVS Workload",          icon: "⬡", color: "#0f62fe", desc: "Your AIX, IBM i, Linux, or OpenShift workload running inside an IBM Power Virtual Server workspace. All inbound network traffic enters through one of the connection mechanisms below.", sub: "IBM Power Virtual Server workspace" },
+  {
+    id: "pvs", row: 0, label: "PowerVS Workload", icon: "⬡", color: "#0f62fe",
+    sub: "IBM Power Virtual Server workspace",
+    desc: "Your AIX, IBM i, Linux, or OpenShift workload running inside an IBM Power Virtual Server workspace. " +
+          "VLAN isolation between tenants is enforced at the Virtual I/O Server (VIOS) and physical switch/router layer. " +
+          "A Juniper vSRX firewall sits at the PowerVS network edge with the following ports open by default: " +
+          "22 (SSH), 443 (HTTPS), 992 (IBM i 5250 SSL), ICMP, and IBM i LPAR ports 2005/2007/2010/2012/9470/9475/9476. " +
+          "Port 6443 is also open (except WDC04 and DAL13). Extra ports require a customer-managed firewall connected via Direct Link Connect.",
+    docsUrl: "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-network-architecture-diagrams",
+  },
 
   // Row 1 — intent
-  { id: "secure",       row: 1, label: "Secure Connections",        icon: "🔒", color: "#007d79", desc: "Private, encrypted, or dedicated connectivity that never traverses the public internet. Use these patterns for regulated workloads, low-latency requirements, or any data that must remain off the public internet.", sub: "Private / dedicated path" },
-  { id: "public",       row: 1, label: "Public Connections",        icon: "🌐", color: "#ff832b", desc: "Connectivity that uses the public internet as a transport layer. Suitable for non-sensitive workloads or where cost and simplicity outweigh the need for dedicated bandwidth. All public endpoints should be protected by a firewall or proxy.", sub: "Internet-facing path" },
+  {
+    id: "secure", row: 1, label: "Secure Connections", icon: "🔒", color: "#007d79",
+    sub: "Private / dedicated path",
+    desc: "Private, encrypted, or dedicated connectivity that never traverses the public internet. " +
+          "Includes IBM Cloud Direct Link (dedicated private WAN), VPC site-to-site VPN (IPSec over internet), " +
+          "Classic Network Gateway appliances, and VPC-hosted firewall / proxy appliances. " +
+          "All secure paths route through Transit Gateway into the PowerVS workspace.",
+  },
+  {
+    id: "public", row: 1, label: "Public Connections", icon: "🌐", color: "#ff832b",
+    sub: "Internet-facing path",
+    desc: "Internet connectivity for PowerVS instances is not direct — PowerVS does not support attaching public subnets " +
+          "directly to an LPAR. Instead, VPC infrastructure is used as the internet on-ramp. " +
+          "Outbound traffic flows: PowerVS → TGW → VPC → NLB (routing mode) → Public Gateway → internet. " +
+          "Inbound traffic flows: internet → Public Address Range → VPC routing table → NLB → TGW → PowerVS. " +
+          "VPC Security Groups on the NLB control what traffic is permitted in both directions.",
+    docsUrl: "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-powervs-public-network-setup",
+  },
 
   // Row 2 — entry mechanism (secure branch)
-  { id: "direct_link",  row: 2, label: "IBM Cloud Direct Link 2.0", icon: "⇌", color: "#007d79", desc: "A dedicated, private, high-bandwidth connection between your on-premises network and IBM Cloud. Available in Connect (via network provider), Dedicated (your own cross-connect), and Dedicated Hosting flavors. Bypasses the public internet entirely. Typical use: primary WAN for regulated or latency-sensitive PowerVS workloads.", sub: "Dedicated private WAN", docsUrl: "https://cloud.ibm.com/docs/dl?topic=dl-getting-started" },
-  { id: "vpc_vpn",      row: 2, label: "VPC VPN (Site-to-Site)",    icon: "⊕", color: "#007d79", desc: "IPSec site-to-site tunnels between your on-premises gateway and an IBM Cloud VPC VPN Gateway. Traffic is encrypted over the public internet. Lower cost than Direct Link but higher latency and shared bandwidth. Typical use: smaller or less latency-sensitive workloads, or as a backup path alongside Direct Link.", sub: "IPSec over internet", docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-overview" },
-  { id: "classic_gw",   row: 2, label: "Classic Network Gateway",   icon: "⇒", color: "#007d79", desc: "IBM Cloud Classic Infrastructure Gateway appliances (Juniper vSRX, Fortinet vFSA, or Cisco ASAv) providing firewall, NAT, and routing services at the Classic network edge. Used when PowerVS is connected to Classic via a classic link rather than directly into VPC.", sub: "Classic infra gateway", docsUrl: "https://cloud.ibm.com/docs/gateway-appliance?topic=gateway-appliance-getting-started" },
-  { id: "vpc_fw",       row: 2, label: "VPC Firewall / Proxy",      icon: "🛡", color: "#007d79", desc: "Third-party or IBM-provided virtual firewall or proxy appliance deployed inside a VPC. Inspects and filters traffic between the internet and PowerVS workloads. Options include Palo Alto VM-Series, Fortinet, Check Point, or open-source pfSense/OPNsense images.", sub: "Virtual firewall in VPC", docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-vnf" },
+  {
+    id: "direct_link", row: 2, label: "IBM Cloud Direct Link 2.0", icon: "⇌", color: "#007d79",
+    sub: "Dedicated private WAN",
+    desc: "A dedicated, private, high-bandwidth connection between your on-premises network and IBM Cloud. " +
+          "Available in Connect (via network provider), Dedicated (your own cross-connect), and Dedicated Hosting flavors. " +
+          "Bypasses the public internet entirely — the only path that satisfies strict data-residency or regulatory requirements. " +
+          "Requires Transit Gateway on the IBM Cloud side to route into the PowerVS workspace. " +
+          "If you need ports beyond the default PowerVS firewall set, use a customer Vyatta/vSRX/FortiGate firewall connected via Direct Link Connect.",
+    docsUrl: "https://cloud.ibm.com/docs/dl?topic=dl-getting-started",
+  },
+  {
+    id: "vpc_vpn", row: 2, label: "VPC VPN (Site-to-Site)", icon: "⊕", color: "#007d79",
+    sub: "IPSec tunnel over internet",
+    desc: "IPSec site-to-site tunnels between your on-premises gateway and an IBM Cloud VPC VPN Gateway. " +
+          "Traffic is encrypted over the public internet. Lower cost than Direct Link but with higher latency and shared bandwidth. " +
+          "Requires Transit Gateway to route traffic from the VPC VPN termination point into the PowerVS workspace. " +
+          "Route Tables in the VPC direct post-VPN traffic toward the TGW. " +
+          "Typical use: smaller workloads, dev/test environments, or as a redundant backup alongside Direct Link.",
+    docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-overview",
+  },
+  {
+    id: "classic_gw", row: 2, label: "Classic Network Gateway", icon: "⇒", color: "#007d79",
+    sub: "Classic infrastructure gateway appliance",
+    desc: "IBM Cloud Classic Infrastructure Gateway appliances — Juniper vSRX, Fortinet vFSA, or Cisco ASAv — providing " +
+          "stateful firewall, NAT, and routing at the Classic network edge. " +
+          "Used when a PowerVS workspace is connected to Classic Infrastructure via a classic link rather than directly into VPC. " +
+          "The gateway appliance provides full port flexibility beyond the default PowerVS firewall ports.",
+    docsUrl: "https://cloud.ibm.com/docs/gateway-appliance?topic=gateway-appliance-getting-started",
+  },
+  {
+    id: "vpc_fw", row: 2, label: "VPC Firewall / Proxy", icon: "🛡", color: "#007d79",
+    sub: "Virtual network function in VPC",
+    desc: "Third-party or IBM-provided virtual firewall or proxy appliance (Virtual Network Function / VNF) " +
+          "deployed inside a VPC. Inspects and filters traffic between the internet or on-premises networks and PowerVS workloads. " +
+          "Options include Palo Alto VM-Series, Fortinet FortiGate, Check Point CloudGuard, or open-source pfSense/OPNsense. " +
+          "Sits inline in the VPC routing path; Route Tables steer traffic through the appliance before it reaches TGW → PowerVS.",
+    docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-vnf",
+  },
 
   // Row 2 — entry mechanism (public branch)
-  { id: "public_gw",    row: 2, label: "VPC Public Gateway",        icon: "↗", color: "#ff832b", desc: "Attach a Public Gateway to a VPC subnet to allow outbound-only public internet access for instances on that subnet. No inbound connections are permitted — only responses to outbound requests. Typical use: pulling OS updates, accessing public APIs, or reaching IBM Cloud public endpoints from PowerVS.", sub: "Outbound-only public egress", docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-networking-for-vpc#public-gateway-for-external-connectivity" },
-  { id: "floating_ip",  row: 2, label: "Floating IP / LBaaS",       icon: "IP", color: "#ff832b", desc: "Assign a Floating IP directly to a VPC interface for inbound and outbound internet access, or use IBM Cloud Load Balancer as a Service (LBaaS) to distribute traffic across multiple backend instances. Note: Floating IPs on PowerVS interfaces are not supported — traffic must transit through a VPC jump host or load balancer.", sub: "Public inbound / load balancing", docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-creating-a-vpc-using-the-ibm-cloud-console#creating-a-floating-ip-address" },
+  {
+    id: "public_gw", row: 2, label: "VPC Public Gateway", icon: "↗", color: "#ff832b",
+    sub: "Outbound-only public egress",
+    desc: "A Public Gateway attached to a VPC subnet provides outbound-only public internet access. " +
+          "No inbound connections are permitted through a Public Gateway — only return traffic for outbound-initiated flows. " +
+          "For PowerVS outbound internet: the LPAR sends traffic to its default gateway → TGW → VPC → NLB (routing mode) → Public Gateway → internet. " +
+          "The NLB in routing mode acts as the routing gateway between the TGW and the public-gateway-attached subnet.",
+    docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-networking-for-vpc#public-gateway-for-external-connectivity",
+  },
+  {
+    id: "vpc_nlb", row: 2, label: "VPC NLB (Routing Mode)", icon: "⇅", color: "#ff832b",
+    sub: "Network load balancer as routing gateway",
+    desc: "A private Network Load Balancer configured in routing mode (VNF routing mode) acts as the internet on-ramp for PowerVS. " +
+          "For outbound: the VPC routing table directs TGW-arriving traffic to the NLB, which forwards it through the Public Gateway subnet to the internet. " +
+          "For inbound: internet traffic for a bound Public Address Range arrives at the NLB's private IP via a VPC ingress routing table, " +
+          "and the NLB forwards it through the TGW to the PowerVS workspace. " +
+          "VPC Security Groups attached to the NLB are the primary inbound/outbound traffic filter for the public path — " +
+          "configure them to allow only the required TCP/UDP ports. Note: PowerVS does not support NAT; the public IP must be configured as a secondary interface inside the guest OS.",
+    docsUrl: "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-powervs-public-network-setup",
+  },
 
   // Row 3 — routing & gateway
-  { id: "tgw",          row: 3, label: "Transit Gateway",           icon: "⬡", color: "#6929c4", desc: "IBM Cloud Transit Gateway connects VPCs, PowerVS workspaces, and Classic infrastructure across regions using a hub-and-spoke model. Required for any path that needs to route between a VPC and a PowerVS workspace. Connections can be local (same region) or global (cross-region). Every secure and most public network paths for PowerVS require a Transit Gateway.", sub: "Hub-and-spoke network fabric", docsUrl: "https://cloud.ibm.com/docs/transit-gateway?topic=transit-gateway-getting-started" },
-  { id: "route_tables", row: 3, label: "VPC Route Tables",          icon: "⇢", color: "#6929c4", desc: "Custom route tables attached to VPC subnets that control how traffic is directed — towards the Transit Gateway, a VPN gateway, a firewall appliance, or the public internet. Essential for steering traffic along the correct path in hub-and-spoke architectures. Egress and ingress routing rules can be defined per subnet.", sub: "Traffic steering rules", docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-custom-routes" },
+  {
+    id: "tgw", row: 3, label: "Transit Gateway", icon: "⬡", color: "#6929c4",
+    sub: "Hub-and-spoke network fabric",
+    desc: "IBM Cloud Transit Gateway connects VPCs, PowerVS workspaces, and Classic Infrastructure " +
+          "across regions using a hub-and-spoke model. Required for any path between a VPC and a PowerVS workspace. " +
+          "Connections can be local (same region, no extra charge) or global (cross-region). " +
+          "GRE enhanced route propagation should be disabled when used with public connectivity. " +
+          "Every secure path (Direct Link, VPN, Classic GW, VPC Firewall) and every public path " +
+          "(outbound via Public Gateway, inbound via NLB) require a Transit Gateway.",
+    docsUrl: "https://cloud.ibm.com/docs/transit-gateway?topic=transit-gateway-getting-started",
+  },
+  {
+    id: "route_tables", row: 3, label: "VPC Route Tables", icon: "⇢", color: "#6929c4",
+    sub: "VPC traffic steering rules",
+    desc: "Custom VPC route tables control how traffic is directed within a VPC. " +
+          "For outbound public traffic: a routing table with Transit Gateway as traffic source advertises PowerVS CIDR routes; " +
+          "a default route (0.0.0.0/0) pointing to the NLB's private IP steers internet-bound traffic to the NLB. " +
+          "For inbound public traffic: a separate ingress routing table (traffic source = Internet) routes the bound Public Address Range to the NLB. " +
+          "For VPN: route tables steer post-VPN traffic toward the TGW. " +
+          "Advertise flag must be set to On for routes that need to be visible across the TGW to PowerVS.",
+    docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-custom-routes",
+  },
 
-  // Row 4 — security controls
-  { id: "nacl",         row: 4, label: "Network ACLs",              icon: "≡", color: "#9f1853", desc: "Stateless subnet-level access control lists applied at the VPC subnet boundary. Rules are evaluated in order (lowest number first) and apply to all traffic entering or leaving the subnet. Because ACLs are stateless, you must define both inbound and outbound rules for each allowed flow. Use NACLs as a coarse first line of defence.", sub: "Subnet-level stateless filter", docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls" },
-  { id: "sg",           row: 4, label: "Security Groups",           icon: "🔐", color: "#9f1853", desc: "Stateful instance-level firewall rules applied to VPC virtual network interfaces (VNIs). Allow rules only — there is no explicit deny; traffic not matched by any rule is dropped. Security groups can reference other security groups as sources/destinations, enabling micro-segmentation within a VPC. Applied to VPC jump hosts and load balancers that front PowerVS traffic.", sub: "Instance-level stateful filter", docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-using-security-groups" },
-  { id: "nsg",          row: 4, label: "Network Security Groups",   icon: "⬧", color: "#9f1853", desc: "PowerVS-native Network Security Groups (NSGs) control inbound traffic at the network interface level within a PER-enabled PowerVS workspace. Rules are evaluated per-NIC and restrict which source IPs and ports can reach a given PowerVS instance. NSGs are separate from VPC Security Groups and operate entirely within the PowerVS network plane. Supported on AIX, IBM i, Linux, and OpenShift workloads.", sub: "PowerVS NIC-level filter", docsUrl: "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-network-security-groups" },
+  // Row 4 — security controls (VPC plane)
+  {
+    id: "vpc_nacl", row: 4, label: "VPC Network ACLs", icon: "≡", color: "#9f1853",
+    sub: "VPC · subnet-level · stateless",
+    desc: "VPC Network Access Control Lists (NACLs) are stateless subnet-level firewalls. " +
+          "Every VPC subnet has exactly one ACL; the default ACL allows all inbound and outbound traffic. " +
+          "Rules are evaluated in priority order (lowest number first); unmatched traffic is implicitly denied. " +
+          "Because NACLs are stateless, you must define explicit rules for both directions of any allowed flow — " +
+          "e.g. both the outbound TCP SYN and the inbound TCP SYN-ACK for a connection. " +
+          "Use NACLs as a coarse perimeter defence at the subnet boundary, and Security Groups for fine-grained instance-level control.",
+    docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls",
+  },
+  {
+    id: "vpc_sg", row: 4, label: "VPC Security Groups", icon: "🔐", color: "#9f1853",
+    sub: "VPC · instance / NLB / VPN · stateful",
+    desc: "VPC Security Groups are stateful, instance-level firewalls attached to VPC resources: " +
+          "virtual server network interfaces, NLBs, VPN gateways, and endpoint gateways. " +
+          "Rules are allow-only — unmatched traffic is denied by default. Because they are stateful, " +
+          "a single inbound rule automatically permits the corresponding return traffic. " +
+          "Security groups can reference other security groups as sources, enabling micro-segmentation. " +
+          "In the PowerVS public connectivity pattern, Security Groups on the NLB are the primary control point " +
+          "for which ports (e.g. 22, 443) are permitted from the internet to the PowerVS instance. " +
+          "Multiple security groups can be attached to a single resource; rules are unioned (least-restrictive wins).",
+    docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-using-security-groups",
+  },
+
+  // Row 4 — security controls (PowerVS plane)
+  {
+    id: "pvs_nsg", row: 4, label: "PowerVS NSGs", icon: "⬧", color: "#6929c4",
+    sub: "PowerVS · NIC-level · inbound deny-by-default",
+    desc: "PowerVS Network Security Groups (NSGs) are native to the PowerVS network plane — distinct from VPC Security Groups. " +
+          "They control inbound traffic at the network interface (NIC) level within a PER-enabled PowerVS workspace. " +
+          "All outbound traffic is automatically permitted. Inbound traffic is denied by default unless an explicit allow rule matches. " +
+          "Deny rules are evaluated first and take highest precedence; allow rules are evaluated after. " +
+          "Traffic is matched against Network Address Groups (NAGs) — custom named CIDR collections — rather than raw IPs, " +
+          "and matches the most specific CIDR first. The default NAG (0.0.0.0/0) is bypassed if a more specific custom NAG matches. " +
+          "NSGs are available at no extra cost, require PER-enabled workspaces (CRN-based metering), " +
+          "and are supported on AIX, IBM i, Linux, and OpenShift workloads.",
+    docsUrl: "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-nsg",
+  },
 ];
 
 // Which nodes are children of which (determines highlight propagation)
@@ -736,8 +872,8 @@ const NET_EDGES = [
   { from: "secure",      to: "vpc_fw"      },
   // public → entry
   { from: "public",      to: "public_gw"   },
-  { from: "public",      to: "floating_ip" },
-  // entry → routing (secure paths all go through TGW + route tables)
+  { from: "public",      to: "vpc_nlb"     },
+  // entry → routing
   { from: "direct_link", to: "tgw"         },
   { from: "direct_link", to: "route_tables"},
   { from: "vpc_vpn",     to: "tgw"         },
@@ -747,13 +883,17 @@ const NET_EDGES = [
   { from: "vpc_fw",      to: "route_tables"},
   { from: "public_gw",   to: "tgw"         },
   { from: "public_gw",   to: "route_tables"},
-  { from: "floating_ip", to: "tgw"         },
+  { from: "vpc_nlb",     to: "tgw"         },
+  { from: "vpc_nlb",     to: "route_tables"},
+  { from: "vpc_nlb",     to: "public_gw"   },
   // routing → security controls
-  { from: "tgw",          to: "nacl"       },
-  { from: "tgw",          to: "sg"         },
-  { from: "tgw",          to: "nsg"        },
-  { from: "route_tables", to: "nacl"       },
-  { from: "route_tables", to: "sg"         },
+  { from: "tgw",          to: "vpc_nacl"   },
+  { from: "tgw",          to: "vpc_sg"     },
+  { from: "tgw",          to: "pvs_nsg"    },
+  { from: "route_tables", to: "vpc_nacl"   },
+  { from: "route_tables", to: "vpc_sg"     },
+  // NLB also enforced by VPC SGs
+  { from: "vpc_nlb",      to: "vpc_sg"     },
 ];
 
 // For a clicked node, collect all nodes that should light up:
@@ -813,7 +953,7 @@ function renderNetworkView() {
     "Connection Intent",
     "Entry Mechanism",
     "Routing & Gateway",
-    "Security Controls",
+    "Security Controls (VPC + PowerVS)",
   ];
 
   const maxRow = Math.max(...NET_NODES.map((n) => n.row));
@@ -832,11 +972,28 @@ function renderNetworkView() {
     const rowCards = document.createElement("div");
     rowCards.className = "net-row-cards";
 
+    // For Row 4, insert a divider between VPC-plane and PowerVS-plane cards
+    const vpcPlaneIds  = new Set(["vpc_nacl", "vpc_sg"]);
+    const pvsPlanIds   = new Set(["pvs_nsg"]);
+    let dividerInserted = false;
+
     rowNodes.forEach((node) => {
+      // Insert plane divider before first PowerVS-plane card in Row 4
+      if (r === 4 && pvsPlanIds.has(node.id) && !dividerInserted) {
+        dividerInserted = true;
+        const divider = document.createElement("div");
+        divider.className = "net-plane-divider";
+        divider.textContent = "PowerVS plane";
+        rowCards.appendChild(divider);
+      }
+
       const card = document.createElement("div");
       card.className = "net-card";
       card.dataset.id = node.id;
       card.dataset.row = node.row;
+      // Stamp plane for styling
+      if (vpcPlaneIds.has(node.id))  card.dataset.plane = "vpc";
+      if (pvsPlanIds.has(node.id))   card.dataset.plane = "pvs";
       card.style.setProperty("--net-color", node.color);
 
       const icon = document.createElement("div");
