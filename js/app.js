@@ -391,6 +391,42 @@ function renderLegend() {
   });
 }
 
+const VALID_VIEWS = new Set(["grid", "matrix", "network", "availability"]);
+
+// Shared function that switches the active view, updates the URL hash,
+// and re-renders. Safe to call before or after load().
+function switchToView(viewId) {
+  if (!VALID_VIEWS.has(viewId)) viewId = "grid";
+  if (state.viewMode === viewId) return;
+  state.viewMode = viewId;
+
+  // Update hash without adding a browser history entry
+  history.replaceState(null, "", `#${viewId === "grid" ? "" : viewId}`);
+
+  const main = document.getElementById("main");
+  renderViewSwitch();
+  // Tear down previous view area
+  ["grid-area", "network-area", "matrix-area", "avail-area"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
+  main.classList.remove("is-grid-mode", "is-network-mode", "is-matrix-mode", "is-avail-mode");
+  document.getElementById("sidebar").classList.remove("is-open");
+  if (viewId === "grid") {
+    main.classList.add("is-grid-mode");
+    renderGridView();
+  } else if (viewId === "matrix") {
+    main.classList.add("is-matrix-mode");
+    renderMatrixView();
+  } else if (viewId === "availability") {
+    main.classList.add("is-avail-mode");
+    renderAvailabilityView();
+  } else {
+    main.classList.add("is-network-mode");
+    renderNetworkView();
+  }
+}
+
 function renderViewSwitch() {
   if (!els.viewSwitch) return;
   const modes = [
@@ -405,32 +441,7 @@ function renderViewSwitch() {
   }).join("");
 
   els.viewSwitch.querySelectorAll(".view-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      if (state.viewMode === btn.dataset.view) return;
-      state.viewMode = btn.dataset.view;
-      const main = document.getElementById("main");
-      renderViewSwitch();
-      // Tear down previous view area
-      ["grid-area", "network-area", "matrix-area", "avail-area"].forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) el.remove();
-      });
-      main.classList.remove("is-grid-mode", "is-network-mode", "is-matrix-mode", "is-avail-mode");
-      document.getElementById("sidebar").classList.remove("is-open");
-      if (state.viewMode === "grid") {
-        main.classList.add("is-grid-mode");
-        renderGridView();
-      } else if (state.viewMode === "matrix") {
-        main.classList.add("is-matrix-mode");
-        renderMatrixView();
-      } else if (state.viewMode === "availability") {
-        main.classList.add("is-avail-mode");
-        renderAvailabilityView();
-      } else {
-        main.classList.add("is-network-mode");
-        renderNetworkView();
-      }
-    });
+    btn.addEventListener("click", () => switchToView(btn.dataset.view));
   });
 }
 
@@ -1609,8 +1620,22 @@ async function load() {
   renderOsFilter();
   renderFooter();
   renderSidebar();
-  document.getElementById("main").classList.add("is-grid-mode");
-  renderGridView();
+
+  // Read initial view from URL hash (e.g. #availability, #network)
+  const initialView = VALID_VIEWS.has(location.hash.slice(1)) ? location.hash.slice(1) : "grid";
+  const main = document.getElementById("main");
+  main.classList.add(`is-${initialView === "grid" ? "grid" : initialView === "matrix" ? "matrix" : initialView === "availability" ? "avail" : "network"}-mode`);
+  if (initialView === "grid")         renderGridView();
+  else if (initialView === "matrix")  renderMatrixView();
+  else if (initialView === "availability") renderAvailabilityView();
+  else                                renderNetworkView();
+
+  // Keep hash in sync when user navigates back/forward
+  window.addEventListener("hashchange", () => {
+    const viewId = VALID_VIEWS.has(location.hash.slice(1)) ? location.hash.slice(1) : "grid";
+    switchToView(viewId);
+  });
+
   if (els.footerHint) els.footerHint.textContent = "Grid: click an OS to highlight integrations · Network: click a node to trace the connection path · Availability: filter by machine type";
 }
 
