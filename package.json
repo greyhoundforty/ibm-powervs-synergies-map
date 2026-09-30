@@ -9,6 +9,7 @@
     "build": "node -e \"console.log('static')\""
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "vercel": "^59.26.0"
   }
 }
