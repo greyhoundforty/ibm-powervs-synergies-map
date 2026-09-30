@@ -21,15 +21,14 @@ const state = {
   laneFilter: null,
   osFilter: null,
   chromeBound: false,
-  viewMode: "grid", // "map" | "grid"
+  viewMode: "grid", // "network" | "grid"
+  // Network view state
+  netSelected: null,   // id of selected node in network view
 };
 
 const els = {
   legend: document.getElementById("play-legend"),
   osFilter: document.getElementById("os-filter"),
-  lanes: document.getElementById("lanes"),
-  nodes: document.getElementById("nodes"),
-  svg: document.getElementById("svg-connections"),
   sidebar: document.getElementById("sidebar-inner"),
   reset: document.getElementById("reset-btn"),
   search: document.getElementById("search"),
@@ -38,7 +37,6 @@ const els = {
   footer: document.getElementById("footer-stats"),
   footerHint: document.getElementById("footer-hint"),
   theme: document.getElementById("theme-btn"),
-  map: document.getElementById("map-area"),
   viewSwitch: document.getElementById("view-switch"),
   metaText: document.getElementById("meta-text"),
 };
@@ -88,184 +86,19 @@ function connectionsFor(id, cat = state.laneFilter) {
   return all.filter((c) => neighborCat(c, id) === cat);
 }
 
-function dashFor(kind) {
-  if (kind === "platform") return "6 4";
-  if (kind === "optional") return "2 3";
-  return "";
-}
-
-function layout() {
-  const rect = els.map.getBoundingClientRect();
-  const padX = 180;  // symmetric margin — accommodates lane labels left, badges right
-  const width = rect.width;
-  const height = rect.height;
-  const laneCount = state.playOrder.length || 1;
-
-  // Lane 0 (hub+hw) gets extra height; remaining lanes share the rest equally.
-  const hubLaneWeight = 1.6;
-  const totalWeight = hubLaneWeight + (laneCount - 1);
-  const baseH = height / totalWeight;
-  const laneHeights = state.playOrder.map((_, i) => i === 0 ? baseH * hubLaneWeight : baseH);
-  const laneTops = laneHeights.reduce((acc, h, i) => {
-    acc.push(i === 0 ? 0 : acc[i - 1] + laneHeights[i - 1]);
-    return acc;
-  }, []);
-
-  const positions = new Map();
-
-  els.lanes.innerHTML = "";
-  state.playOrder.forEach((playId, i) => {
-    const top = laneTops[i];
-    const laneH = laneHeights[i];
-    if (i % 2 === 1) {
-      const strip = document.createElement("div");
-      strip.className = "lane-strip";
-      strip.style.top = `${top}px`;
-      strip.style.height = `${laneH}px`;
-      els.lanes.appendChild(strip);
-    }
-    if (i > 0) {
-      const div = document.createElement("div");
-      div.className = "lane-divider";
-      div.style.top = `${top}px`;
-      els.lanes.appendChild(div);
-    }
-    const cat = state.categories.find((c) => c.playId === playId);
-    if (cat) {
-      const label = document.createElement("div");
-      label.className = "lane-label";
-      label.style.top = `${top + 8}px`;
-      label.textContent = cat.label;
-      els.lanes.appendChild(label);
-    }
-
-    const inLane = state.products.filter((p) => p.cat === cat?.id);
-    const hubNode = inLane.find((p) => p.hub);
-    const nonHub = inLane.filter((p) => !p.hub);
-    const n = inLane.length;
-
-    if (hubNode && nonHub.length > 0) {
-      // Hub gets its own centered row at top of lane; siblings spread on a lower row.
-      const yHub = top + laneH * 0.28;
-      const yNodes = top + laneH * 0.72;
-      positions.set(hubNode.id, { x: width / 2, y: yHub });
-      const hwAvail = width - padX * 2;
-      const hwStep = nonHub.length > 1 ? hwAvail / (nonHub.length - 1) : 0;
-      nonHub.forEach((p, idx) => {
-        const x = nonHub.length === 1 ? width / 2 : padX + idx * hwStep;
-        positions.set(p.id, { x, y: yNodes });
-      });
-    } else if (n === 1) {
-      positions.set(inLane[0].id, { x: width / 2, y: top + laneH / 2 + 6 });
-    } else if (n === 2) {
-      positions.set(inLane[0].id, { x: width * 0.34, y: top + laneH / 2 + 6 });
-      positions.set(inLane[1].id, { x: width * 0.66, y: top + laneH / 2 + 6 });
-    } else {
-      const avail = width - padX * 2;
-      const step = avail / (n - 1);
-      inLane.forEach((p, idx) => {
-        const x = padX + idx * step;
-        const y = top + laneH / 2 + 6;
-        positions.set(p.id, { x, y });
-      });
-    }
-  });
-
-  els.nodes.innerHTML = "";
-  for (const product of state.products) {
-    const pos = positions.get(product.id);
-    if (!pos) continue;
-    const node = document.createElement("div");
-    node.className = `pnode${product.hub ? " is-hub" : ""}`;
-    node.dataset.id = product.id;
-    node.dataset.cat = product.cat;
-    node.style.left = `${pos.x}px`;
-    node.style.top = `${pos.y}px`;
-    const cat = catFor(product);
-    if (cat) {
-      node.style.setProperty("--node-color", playColor(cat.playId));
-    }
-    const titleSpan = document.createElement("span");
-    titleSpan.textContent = product.label;
-    node.appendChild(titleSpan);
-
-    if (product.status === "partner") {
-      const badge = document.createElement("span");
-      badge.className = "partner-badge";
-      badge.textContent = "Partner";
-      node.appendChild(badge);
-    }
-    if (product.status === "restricted") {
-      const badge = document.createElement("span");
-      badge.className = "restricted-badge";
-      badge.textContent = "Existing clients only";
-      node.appendChild(badge);
-    }
-
-    node.addEventListener("click", () => selectProduct(product.id));
-    els.nodes.appendChild(node);
-  }
-
-  drawConnections(positions);
-  applyHighlights();
-}
-
-function drawConnections(positions) {
-  els.svg.innerHTML = "";
-  const frag = document.createDocumentFragment();
-
-  state.connections.forEach((conn, index) => {
-    const p1 = positions.get(conn.from);
-    const p2 = positions.get(conn.to);
-    if (!p1 || !p2) return;
-
-    const fromProd = productById(conn.from);
-    const toProd = productById(conn.to);
-
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    const dy = p2.y - p1.y;
-    // Vertical bezier: handles drop straight down from each endpoint.
-    // This keeps cross-lane curves clean regardless of horizontal distance.
-    const bend = Math.abs(dy) * 0.5;
-    const d = `M ${p1.x} ${p1.y} C ${p1.x} ${p1.y + bend}, ${p2.x} ${p2.y - bend}, ${p2.x} ${p2.y}`;
-
-    path.setAttribute("d", d);
-    path.setAttribute(
-      "class",
-      `conn-path is-${conn.kind}${conn.status === "partner" ? " is-partner" : ""}`
-    );
-    path.dataset.from = conn.from;
-    path.dataset.to = conn.to;
-    path.dataset.index = index;
-
-    const dash = dashFor(conn.kind);
-    if (dash) path.setAttribute("stroke-dasharray", dash);
-
-    path.addEventListener("click", () => {
-      selectProduct(conn.from);
-    });
-
-    frag.appendChild(path);
-  });
-
-  els.svg.appendChild(frag);
-}
-
 function selectProduct(id) {
   if (state.selectedId === id) {
     state.selectedId = null;
     state.laneFilter = null;
-    // If deselecting an OS node, also clear the implicit OS scope
     if (OS_NODE_MAP[id]) state.osFilter = null;
   } else {
     state.selectedId = id;
-    // Selecting a non-OS node clears any active OS chip filter
     if (!OS_NODE_MAP[id]) state.osFilter = null;
   }
   renderLegend();
   renderOsFilter();
   renderSidebar();
-  applyHighlights();
+  if (state.viewMode === "grid") applyGridHighlights();
 }
 
 // Returns the OS tag implied by the selected node (e.g. "os_aix" → "aix")
@@ -276,162 +109,6 @@ function productMatchesOs(product, osTag) {
   const os = product.os;
   if (!os || os.length === 0) return true; // agnostic — always included
   return os.includes(osTag);
-}
-
-function applyHighlights() {
-  const selected = state.selectedId;
-  const q = state.query.trim().toLowerCase();
-
-  // Determine effective OS scope: explicit chip filter OR OS node selection
-  const selectedOsTag = selected ? OS_NODE_MAP[selected] : null;
-  const activeOs = state.osFilter || selectedOsTag || null;
-
-  // The OS node id for the active OS (e.g. "os_aix" when activeOs = "aix")
-  const OS_ID_FOR_TAG = { aix: "os_aix", ibmi: "os_ibmi", linux: "os_linux", ocp: "os_ocp" };
-  const activeOsNodeId = activeOs ? OS_ID_FOR_TAG[activeOs] : null;
-
-  // Build neighbor set from graph edges (used when no OS-node is selected)
-  const graphConns = selected && !selectedOsTag
-    ? connectionsFor(selected, null)
-    : [];
-  const graphNeighborIds = new Set(
-    graphConns.flatMap((c) => [c.from, c.to]).filter((id) => id !== selected)
-  );
-
-  // When an OS node is selected or a chip is active, "neighbors" = all products
-  // sharing that OS tag (excluding the OS node itself).
-  // If laneFilter is also active, further restrict to that lane
-  // (and also exclude powervs-cat nodes — they sit above the OS ceiling).
-  const osNeighborIds = activeOs
-    ? new Set(
-        state.products
-          .filter((p) => {
-            if (p.id === selected) return false;
-            if (p.cat === "powervs") return false; // above OS ceiling
-            if (!productMatchesOs(p, activeOs)) return false;
-            if (state.laneFilter && p.cat !== state.laneFilter) return false;
-            return true;
-          })
-          .map((p) => p.id)
-      )
-    : null;
-
-  // For graph-based selection, also apply lane filter
-  const filteredGraphNeighborIds = state.laneFilter && !activeOs
-    ? new Set([...graphNeighborIds].filter((id) => productById(id)?.cat === state.laneFilter))
-    : graphNeighborIds;
-
-  const neighborIds = osNeighborIds ?? filteredGraphNeighborIds;
-
-  // Default-view edge set: only hub→hw edges shown when nothing is selected.
-  // hub→os lines cross the hw row and look tangled; OS connections revealed on interaction.
-  const defaultEdgePairs = new Set(
-    state.connections
-      .filter((c) => {
-        const fromCat = productById(c.from)?.cat;
-        const toCat = productById(c.to)?.cat;
-        // Both ends must be powervs-cat (hub↔hw within the top lane only)
-        return fromCat === "powervs" && toCat === "powervs";
-      })
-      .map((c) => `${c.from}::${c.to}`)
-  );
-
-  const nodes = els.nodes.querySelectorAll(".pnode");
-  nodes.forEach((node) => {
-    const id = node.dataset.id;
-    const product = productById(id);
-    const isSel = id === selected;
-    const isNbr = neighborIds.has(id);
-    const isHit = q && matchesQuery(product, q);
-    const inLane = !state.laneFilter || product.cat === state.laneFilter;
-    const inOs = !activeOs || productMatchesOs(product, activeOs);
-
-    node.classList.toggle("is-selected", isSel);
-    node.classList.toggle("is-neighbor", isNbr);
-    node.classList.toggle("is-query-hit", Boolean(isHit));
-
-    let dimmed = false;
-    if (activeOs && state.laneFilter) {
-      dimmed = !isSel && !isNbr;
-    } else if (activeOs) {
-      // OS only: show OS node + its OS-tagged peers; dim powervs-cat above it
-      dimmed = !isSel && !inOs;
-    } else if (selected) {
-      dimmed = !isSel && !isNbr;
-    } else if (state.laneFilter) {
-      dimmed = !inLane;
-    }
-    if (q && !isHit && !isSel) {
-      dimmed = true;
-    }
-
-    node.classList.toggle("is-dimmed", dimmed);
-  });
-
-  const paths = els.svg.querySelectorAll(".conn-path");
-  paths.forEach((path) => {
-    const from = path.dataset.from;
-    const to = path.dataset.to;
-
-    let lit = false;
-    let dimmed = false;
-
-    // powervs-cat nodes are hub/hw — above the OS ceiling.
-    const isRelay = (id) => productById(id)?.cat === "powervs";
-
-    if (activeOs) {
-      if (state.laneFilter) {
-        // Lane + OS: a path lights if one end is a visible lane node and the
-        // other end is the active OS node (the ceiling). No hub above that.
-        const fromInLane = neighborIds.has(from);
-        const toInLane = neighborIds.has(to);
-        const fromIsOsNode = from === activeOsNodeId || from === selected;
-        const toIsOsNode = to === activeOsNodeId || to === selected;
-        lit = (fromInLane && toIsOsNode) || (toInLane && fromIsOsNode);
-      } else {
-        // OS only: light edges from the OS node to each OS-tagged peer.
-        // No relay through powervs hub — lines terminate at the OS node.
-        const fromIsOsNode = from === activeOsNodeId || from === selected;
-        const toIsOsNode = to === activeOsNodeId || to === selected;
-        const fromInOs = neighborIds.has(from);
-        const toInOs = neighborIds.has(to);
-        lit = (fromIsOsNode && toInOs) || (toIsOsNode && fromInOs);
-      }
-      dimmed = !lit;
-    } else if (selected) {
-      // Graph-edge mode: light all direct edges of the selected node.
-      // Only suppress hub as a relay when it is NOT a direct neighbor of the selection.
-      const selectedCat = productById(selected)?.cat;
-      const isDirectHubEdge = (from === selected && isRelay(to)) || (to === selected && isRelay(from));
-      const suppressHub = selectedCat !== "powervs" && !isDirectHubEdge;
-      const fromHub = suppressHub && isRelay(from);
-      const toHub = suppressHub && isRelay(to);
-      lit = !fromHub && !toHub && (
-        (from === selected && filteredGraphNeighborIds.has(to)) ||
-        (to === selected && filteredGraphNeighborIds.has(from))
-      );
-      dimmed = !lit;
-    } else {
-      // Default idle view: only show hub→hw and hub→os edges; hide everything else.
-      const edgeKey = `${from}::${to}`;
-      const inDefault = defaultEdgePairs.has(edgeKey);
-      if (q) {
-        // Search overrides: don't hide/show based on default set
-        lit = false;
-        dimmed = false;
-      } else {
-        lit = false;
-        dimmed = !inDefault;
-      }
-    }
-
-    path.classList.toggle("is-lit", lit);
-    path.classList.toggle("is-dimmed", dimmed);
-    // Idle-visible paths: visible but not "lit" (blue). Only in default, no-selection state.
-    const isIdle = !selected && !state.osFilter && !q &&
-      defaultEdgePairs.has(`${from}::${to}`) && !lit && !dimmed;
-    path.classList.toggle("is-idle", isIdle);
-  });
 }
 
 function renderOsFilter() {
@@ -445,14 +122,13 @@ function renderOsFilter() {
     chip.addEventListener("click", () => {
       const os = chip.dataset.os;
       state.osFilter = state.osFilter === os ? null : os;
-      // Clear any non-OS node selection to avoid conflicts
       if (state.selectedId && !OS_NODE_MAP[state.selectedId]) {
         state.selectedId = null;
       }
       renderOsFilter();
       renderLegend();
       renderSidebar();
-      applyHighlights();
+      if (state.viewMode === "grid") applyGridHighlights();
     });
   });
 }
@@ -705,7 +381,7 @@ function renderLegend() {
       const cat = chip.dataset.cat;
       state.laneFilter = state.laneFilter === cat ? null : cat;
       renderLegend();
-      applyHighlights();
+      if (state.viewMode === "grid") applyGridHighlights();
     });
   });
 }
@@ -713,8 +389,8 @@ function renderLegend() {
 function renderViewSwitch() {
   if (!els.viewSwitch) return;
   const modes = [
-    { id: "map",  label: "Map" },
-    { id: "grid", label: "Grid" },
+    { id: "grid",    label: "Grid"    },
+    { id: "network", label: "Network" },
   ];
   els.viewSwitch.innerHTML = modes.map(({ id, label }) => {
     const active = state.viewMode === id;
@@ -723,14 +399,18 @@ function renderViewSwitch() {
 
   els.viewSwitch.querySelectorAll(".view-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
+      if (state.viewMode === btn.dataset.view) return;
       state.viewMode = btn.dataset.view;
+      const main = document.getElementById("main");
       renderViewSwitch();
       if (state.viewMode === "grid") {
-        document.getElementById("main").classList.add("is-grid-mode");
+        main.classList.add("is-grid-mode");
+        main.classList.remove("is-network-mode");
         renderGridView();
       } else {
-        document.getElementById("main").classList.remove("is-grid-mode");
-        layout();
+        main.classList.remove("is-grid-mode");
+        main.classList.add("is-network-mode");
+        renderNetworkView();
       }
     });
   });
@@ -968,15 +648,13 @@ function bindChrome() {
     state.selectedId = null;
     state.laneFilter = null;
     state.osFilter = null;
+    state.netSelected = null;
     renderLegend();
     renderOsFilter();
     renderSidebar();
-    applyHighlights();
-    // In grid mode: close sidebar and sync OS button states
     document.getElementById("sidebar").classList.remove("is-open");
-    if (state.viewMode === "grid") {
-      applyGridHighlights();
-    }
+    if (state.viewMode === "grid") applyGridHighlights();
+    if (state.viewMode === "network") applyNetworkHighlights();
   });
 
   els.search.addEventListener("input", () => {
@@ -990,7 +668,6 @@ function bindChrome() {
     } else {
       els.searchCount.hidden = true;
     }
-    applyHighlights();
     if (state.viewMode === "grid") applyGridHighlights();
   });
 
@@ -999,14 +676,270 @@ function bindChrome() {
     state.query = "";
     els.searchClear.classList.remove("is-visible");
     els.searchCount.hidden = true;
-    applyHighlights();
     if (state.viewMode === "grid") applyGridHighlights();
     els.search.focus();
   });
+}
 
-  window.addEventListener("resize", () => {
-    if (state.viewMode === "map") layout();
+// ---------------------------------------------------------------------------
+// Network view — PowerVS connectivity topology
+// ---------------------------------------------------------------------------
+//
+// Self-contained layered diagram. Data does NOT come from products.json —
+// this topology is specific to the network path view. Rows flow top-to-bottom:
+//   Row 0 — Workload anchor (PowerVS)
+//   Row 1 — Connection intent  (Secure / Public)
+//   Row 2 — Entry mechanisms   (Direct Link, VPN, etc.)
+//   Row 3 — Routing & gateway  (TGW, Route Tables, Classic GW)
+//   Row 4 — Security controls  (NACLs, Security Groups, NSGs)
+//
+// Clicking a node highlights it + all ancestors and descendants in the path.
+// ---------------------------------------------------------------------------
+
+const NET_NODES = [
+  // Row 0 — anchor
+  { id: "pvs",          row: 0, label: "PowerVS Workload",          icon: "⬡", color: "#0f62fe", desc: "Your AIX, IBM i, Linux, or OpenShift workload running inside an IBM Power Virtual Server workspace. All inbound network traffic enters through one of the connection mechanisms below.", sub: "IBM Power Virtual Server workspace" },
+
+  // Row 1 — intent
+  { id: "secure",       row: 1, label: "Secure Connections",        icon: "🔒", color: "#007d79", desc: "Private, encrypted, or dedicated connectivity that never traverses the public internet. Use these patterns for regulated workloads, low-latency requirements, or any data that must remain off the public internet.", sub: "Private / dedicated path" },
+  { id: "public",       row: 1, label: "Public Connections",        icon: "🌐", color: "#ff832b", desc: "Connectivity that uses the public internet as a transport layer. Suitable for non-sensitive workloads or where cost and simplicity outweigh the need for dedicated bandwidth. All public endpoints should be protected by a firewall or proxy.", sub: "Internet-facing path" },
+
+  // Row 2 — entry mechanism (secure branch)
+  { id: "direct_link",  row: 2, label: "IBM Cloud Direct Link 2.0", icon: "⇌", color: "#007d79", desc: "A dedicated, private, high-bandwidth connection between your on-premises network and IBM Cloud. Available in Connect (via network provider), Dedicated (your own cross-connect), and Dedicated Hosting flavors. Bypasses the public internet entirely. Typical use: primary WAN for regulated or latency-sensitive PowerVS workloads.", sub: "Dedicated private WAN", docsUrl: "https://cloud.ibm.com/docs/dl?topic=dl-getting-started" },
+  { id: "vpc_vpn",      row: 2, label: "VPC VPN (Site-to-Site)",    icon: "⊕", color: "#007d79", desc: "IPSec site-to-site tunnels between your on-premises gateway and an IBM Cloud VPC VPN Gateway. Traffic is encrypted over the public internet. Lower cost than Direct Link but higher latency and shared bandwidth. Typical use: smaller or less latency-sensitive workloads, or as a backup path alongside Direct Link.", sub: "IPSec over internet", docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-overview" },
+  { id: "classic_gw",   row: 2, label: "Classic Network Gateway",   icon: "⇒", color: "#007d79", desc: "IBM Cloud Classic Infrastructure Gateway appliances (Juniper vSRX, Fortinet vFSA, or Cisco ASAv) providing firewall, NAT, and routing services at the Classic network edge. Used when PowerVS is connected to Classic via a classic link rather than directly into VPC.", sub: "Classic infra gateway", docsUrl: "https://cloud.ibm.com/docs/gateway-appliance?topic=gateway-appliance-getting-started" },
+  { id: "vpc_fw",       row: 2, label: "VPC Firewall / Proxy",      icon: "🛡", color: "#007d79", desc: "Third-party or IBM-provided virtual firewall or proxy appliance deployed inside a VPC. Inspects and filters traffic between the internet and PowerVS workloads. Options include Palo Alto VM-Series, Fortinet, Check Point, or open-source pfSense/OPNsense images.", sub: "Virtual firewall in VPC", docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-vnf" },
+
+  // Row 2 — entry mechanism (public branch)
+  { id: "public_gw",    row: 2, label: "VPC Public Gateway",        icon: "↗", color: "#ff832b", desc: "Attach a Public Gateway to a VPC subnet to allow outbound-only public internet access for instances on that subnet. No inbound connections are permitted — only responses to outbound requests. Typical use: pulling OS updates, accessing public APIs, or reaching IBM Cloud public endpoints from PowerVS.", sub: "Outbound-only public egress", docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-networking-for-vpc#public-gateway-for-external-connectivity" },
+  { id: "floating_ip",  row: 2, label: "Floating IP / LBaaS",       icon: "IP", color: "#ff832b", desc: "Assign a Floating IP directly to a VPC interface for inbound and outbound internet access, or use IBM Cloud Load Balancer as a Service (LBaaS) to distribute traffic across multiple backend instances. Note: Floating IPs on PowerVS interfaces are not supported — traffic must transit through a VPC jump host or load balancer.", sub: "Public inbound / load balancing", docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-creating-a-vpc-using-the-ibm-cloud-console#creating-a-floating-ip-address" },
+
+  // Row 3 — routing & gateway
+  { id: "tgw",          row: 3, label: "Transit Gateway",           icon: "⬡", color: "#6929c4", desc: "IBM Cloud Transit Gateway connects VPCs, PowerVS workspaces, and Classic infrastructure across regions using a hub-and-spoke model. Required for any path that needs to route between a VPC and a PowerVS workspace. Connections can be local (same region) or global (cross-region). Every secure and most public network paths for PowerVS require a Transit Gateway.", sub: "Hub-and-spoke network fabric", docsUrl: "https://cloud.ibm.com/docs/transit-gateway?topic=transit-gateway-getting-started" },
+  { id: "route_tables", row: 3, label: "VPC Route Tables",          icon: "⇢", color: "#6929c4", desc: "Custom route tables attached to VPC subnets that control how traffic is directed — towards the Transit Gateway, a VPN gateway, a firewall appliance, or the public internet. Essential for steering traffic along the correct path in hub-and-spoke architectures. Egress and ingress routing rules can be defined per subnet.", sub: "Traffic steering rules", docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-custom-routes" },
+
+  // Row 4 — security controls
+  { id: "nacl",         row: 4, label: "Network ACLs",              icon: "≡", color: "#9f1853", desc: "Stateless subnet-level access control lists applied at the VPC subnet boundary. Rules are evaluated in order (lowest number first) and apply to all traffic entering or leaving the subnet. Because ACLs are stateless, you must define both inbound and outbound rules for each allowed flow. Use NACLs as a coarse first line of defence.", sub: "Subnet-level stateless filter", docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-using-acls" },
+  { id: "sg",           row: 4, label: "Security Groups",           icon: "🔐", color: "#9f1853", desc: "Stateful instance-level firewall rules applied to VPC virtual network interfaces (VNIs). Allow rules only — there is no explicit deny; traffic not matched by any rule is dropped. Security groups can reference other security groups as sources/destinations, enabling micro-segmentation within a VPC. Applied to VPC jump hosts and load balancers that front PowerVS traffic.", sub: "Instance-level stateful filter", docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-using-security-groups" },
+  { id: "nsg",          row: 4, label: "Network Security Groups",   icon: "⬧", color: "#9f1853", desc: "PowerVS-native Network Security Groups (NSGs) control inbound traffic at the network interface level within a PER-enabled PowerVS workspace. Rules are evaluated per-NIC and restrict which source IPs and ports can reach a given PowerVS instance. NSGs are separate from VPC Security Groups and operate entirely within the PowerVS network plane. Supported on AIX, IBM i, Linux, and OpenShift workloads.", sub: "PowerVS NIC-level filter", docsUrl: "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-network-security-groups" },
+];
+
+// Which nodes are children of which (determines highlight propagation)
+const NET_EDGES = [
+  // pvs → intent
+  { from: "pvs",         to: "secure"      },
+  { from: "pvs",         to: "public"      },
+  // secure → entry
+  { from: "secure",      to: "direct_link" },
+  { from: "secure",      to: "vpc_vpn"     },
+  { from: "secure",      to: "classic_gw"  },
+  { from: "secure",      to: "vpc_fw"      },
+  // public → entry
+  { from: "public",      to: "public_gw"   },
+  { from: "public",      to: "floating_ip" },
+  // entry → routing (secure paths all go through TGW + route tables)
+  { from: "direct_link", to: "tgw"         },
+  { from: "direct_link", to: "route_tables"},
+  { from: "vpc_vpn",     to: "tgw"         },
+  { from: "vpc_vpn",     to: "route_tables"},
+  { from: "classic_gw",  to: "tgw"         },
+  { from: "vpc_fw",      to: "tgw"         },
+  { from: "vpc_fw",      to: "route_tables"},
+  { from: "public_gw",   to: "tgw"         },
+  { from: "public_gw",   to: "route_tables"},
+  { from: "floating_ip", to: "tgw"         },
+  // routing → security controls
+  { from: "tgw",          to: "nacl"       },
+  { from: "tgw",          to: "sg"         },
+  { from: "tgw",          to: "nsg"        },
+  { from: "route_tables", to: "nacl"       },
+  { from: "route_tables", to: "sg"         },
+];
+
+// For a clicked node, collect all nodes that should light up:
+// ancestors (everything upstream to pvs) + descendants (everything downstream).
+function netReachable(clickedId) {
+  const reachable = new Set([clickedId]);
+
+  // Walk descendants
+  const queue = [clickedId];
+  while (queue.length) {
+    const cur = queue.shift();
+    NET_EDGES.forEach((e) => {
+      if (e.from === cur && !reachable.has(e.to)) {
+        reachable.add(e.to);
+        queue.push(e.to);
+      }
+    });
+  }
+
+  // Walk ancestors
+  const aQueue = [clickedId];
+  const visited = new Set([clickedId]);
+  while (aQueue.length) {
+    const cur = aQueue.shift();
+    NET_EDGES.forEach((e) => {
+      if (e.to === cur && !visited.has(e.from)) {
+        visited.add(e.from);
+        reachable.add(e.from);
+        aQueue.push(e.from);
+      }
+    });
+  }
+
+  return reachable;
+}
+
+function renderNetworkView() {
+  const main = document.getElementById("main");
+  let area = document.getElementById("network-area");
+  if (!area) {
+    area = document.createElement("div");
+    area.id = "network-area";
+    const sidebar = document.getElementById("sidebar");
+    main.insertBefore(area, sidebar);
+  }
+  area.innerHTML = "";
+
+  // Group nodes by row
+  const rows = {};
+  NET_NODES.forEach((n) => {
+    if (!rows[n.row]) rows[n.row] = [];
+    rows[n.row].push(n);
   });
+
+  const ROW_LABELS = [
+    "PowerVS Workspace",
+    "Connection Intent",
+    "Entry Mechanism",
+    "Routing & Gateway",
+    "Security Controls",
+  ];
+
+  const maxRow = Math.max(...NET_NODES.map((n) => n.row));
+  for (let r = 0; r <= maxRow; r++) {
+    const rowNodes = rows[r] || [];
+
+    const rowEl = document.createElement("div");
+    rowEl.className = "net-row";
+    rowEl.dataset.row = r;
+
+    const rowLabel = document.createElement("div");
+    rowLabel.className = "net-row-label";
+    rowLabel.textContent = ROW_LABELS[r] || `Row ${r}`;
+    rowEl.appendChild(rowLabel);
+
+    const rowCards = document.createElement("div");
+    rowCards.className = "net-row-cards";
+
+    rowNodes.forEach((node) => {
+      const card = document.createElement("div");
+      card.className = "net-card";
+      card.dataset.id = node.id;
+      card.dataset.row = node.row;
+      card.style.setProperty("--net-color", node.color);
+
+      const icon = document.createElement("div");
+      icon.className = "net-card-icon";
+      icon.textContent = node.icon;
+      card.appendChild(icon);
+
+      const body = document.createElement("div");
+      body.className = "net-card-body";
+
+      const label = document.createElement("div");
+      label.className = "net-card-label";
+      label.textContent = node.label;
+      body.appendChild(label);
+
+      const sub = document.createElement("div");
+      sub.className = "net-card-sub";
+      sub.textContent = node.sub;
+      body.appendChild(sub);
+
+      card.appendChild(body);
+
+      card.addEventListener("click", () => {
+        if (state.netSelected === node.id) {
+          state.netSelected = null;
+        } else {
+          state.netSelected = node.id;
+        }
+        applyNetworkHighlights();
+        renderNetworkSidebar(node.id);
+      });
+
+      rowCards.appendChild(card);
+    });
+
+    rowEl.appendChild(rowCards);
+    area.appendChild(rowEl);
+  }
+
+  applyNetworkHighlights();
+}
+
+function applyNetworkHighlights() {
+  const area = document.getElementById("network-area");
+  if (!area) return;
+
+  const sel = state.netSelected;
+  const reachable = sel ? netReachable(sel) : null;
+
+  area.querySelectorAll(".net-card").forEach((card) => {
+    const id = card.dataset.id;
+    const isSelected = id === sel;
+    const isReachable = reachable ? reachable.has(id) : false;
+
+    card.classList.toggle("is-selected", isSelected);
+    card.classList.toggle("is-reachable", !isSelected && isReachable);
+    card.classList.toggle("is-dimmed", Boolean(reachable && !isReachable));
+  });
+}
+
+function renderNetworkSidebar(nodeId) {
+  const node = NET_NODES.find((n) => n.id === nodeId);
+  if (!node) return;
+
+  const sidebar = document.getElementById("sidebar");
+  sidebar.classList.add("is-open");
+
+  const children = NET_EDGES
+    .filter((e) => e.from === nodeId)
+    .map((e) => NET_NODES.find((n) => n.id === e.to))
+    .filter(Boolean);
+
+  const parents = NET_EDGES
+    .filter((e) => e.to === nodeId)
+    .map((e) => NET_NODES.find((n) => n.id === e.from))
+    .filter(Boolean);
+
+  const docsLink = node.docsUrl
+    ? `<a class="sb-link" href="${escapeHtml(node.docsUrl)}" target="_blank" rel="noopener noreferrer">
+        <span>IBM Documentation</span>
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M10 2v1.5h2.44L6.97 9.03l1.06 1.06 5.47-5.47V7H15V2h-5z"/><path d="M13 13.5H3v-10h4.5V2H3a1.5 1.5 0 0 0-1.5 1.5v10A1.5 1.5 0 0 0 3 15h10a1.5 1.5 0 0 0 1.5-1.5V9h-1.5v4.5z"/></svg>
+       </a>`
+    : "";
+
+  const relatedHtml = (label, items) => items.length === 0 ? "" : `
+    <div class="sb-section">
+      <div class="sb-section-title">${label}</div>
+      <ul class="sb-list">
+        ${items.map((n) => `<li><strong>${escapeHtml(n.label)}</strong> — ${escapeHtml(n.sub)}</li>`).join("")}
+      </ul>
+    </div>`;
+
+  els.sidebar.innerHTML = `
+    <div class="sb-category">${escapeHtml(node.sub)}</div>
+    <div class="sb-title">${escapeHtml(node.label)}</div>
+    <div class="sb-section">
+      <div class="sb-section-title">Overview</div>
+      <div class="sb-description">${escapeHtml(node.desc)}</div>
+    </div>
+    ${relatedHtml("Requires / Connects To", children)}
+    ${relatedHtml("Part of", parents)}
+    ${docsLink ? `<div class="sb-section">${docsLink}</div>` : ""}
+  `;
 }
 
 async function load() {
@@ -1032,9 +965,9 @@ async function load() {
   renderOsFilter();
   renderFooter();
   renderSidebar();
-  // Default view is grid; map is rendered on demand when switching to it
   document.getElementById("main").classList.add("is-grid-mode");
   renderGridView();
+  if (els.footerHint) els.footerHint.textContent = "Grid: click an OS to highlight integrations · Network: click a node to trace the connection path";
 }
 
 load().catch((err) => {

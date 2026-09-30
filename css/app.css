@@ -345,192 +345,6 @@ body {
   position: relative;
 }
 
-#map-area {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  background: var(--cds-background);
-}
-
-#svg-connections {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: stroke;
-}
-
-.conn-path {
-  fill: none;
-  stroke: var(--conn-neutral);
-  stroke-width: 1;
-  opacity: 0.12;
-  transition: stroke 0.18s ease, opacity 0.18s ease, stroke-width 0.18s ease;
-  cursor: pointer;
-  stroke-linecap: round;
-}
-
-.conn-path:hover {
-  opacity: 0.9 !important;
-  stroke-width: 2.5;
-}
-
-.conn-path.is-native { stroke-dasharray: none; }
-.conn-path.is-platform { stroke-dasharray: 6 4; }
-.conn-path.is-optional { stroke-dasharray: 2 3; }
-.conn-path.is-partner { stroke-dasharray: 4 4; }
-
-.conn-path.is-lit {
-  opacity: 1 !important;
-  stroke-width: 2 !important;
-  stroke: var(--cds-interactive) !important;
-  stroke-dasharray: none !important;
-}
-
-.conn-path.is-idle {
-  opacity: 0.55 !important;
-  stroke-width: 1.5 !important;
-}
-
-.conn-path.is-dimmed {
-  opacity: 0.04 !important;
-}
-
-#lanes {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.lane-strip {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  background: var(--cds-layer-01);
-  opacity: 0.45;
-}
-
-.lane-divider {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: var(--cds-border-subtle-01);
-}
-
-.lane-label {
-  position: absolute;
-  left: 16px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--cds-text-helper);
-  pointer-events: none;
-  user-select: none;
-}
-
-#nodes {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.pnode {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  pointer-events: auto;
-  cursor: pointer;
-  padding: 6px 10px 6px 12px;
-  background: var(--cds-background);
-  border-top: 1px solid var(--cds-border-subtle-02);
-  border-right: 1px solid var(--cds-border-subtle-02);
-  border-bottom: 1px solid var(--cds-border-subtle-02);
-  border-left: 3px solid var(--node-color, var(--cds-interactive));
-  border-radius: 0;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--cds-text-primary);
-  transition: opacity 0.18s, background-color 0.11s, border-color 0.11s;
-  user-select: none;
-  white-space: nowrap;
-  line-height: 1.2;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 280px;
-}
-
-/* Label text truncates; badges are flex siblings so they always show in full */
-.pnode > span:first-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-
-/* hw lane has only 3 nodes — allow full label width */
-.pnode[data-cat="powervs"] {
-  max-width: 380px;
-}
-
-/* Tighter cap for dense 6-node lanes to prevent overlap */
-.pnode[data-cat="backups"] > span:first-child,
-.pnode[data-cat="migration"] > span:first-child,
-.pnode[data-cat="cloud_services"] > span:first-child {
-  max-width: 130px;
-}
-
-
-.pnode:hover {
-  background: var(--cds-background-hover);
-  z-index: 20;
-}
-
-.pnode.is-hub {
-  padding: 8px 14px 8px 14px;
-  font-weight: 600;
-  font-size: 13px;
-  border-left-width: 5px;
-}
-
-.pnode.is-selected {
-  background: var(--cds-background-selected);
-  border-top-color: var(--cds-background-selected);
-  border-right-color: var(--cds-background-selected);
-  border-bottom-color: var(--cds-background-selected);
-  border-left-color: var(--node-color, var(--cds-interactive));
-  color: var(--cds-text-primary);
-  z-index: 30;
-  opacity: 1;
-}
-
-[data-theme="dark"] .pnode.is-selected {
-  background: var(--cds-layer-02);
-  border-top-color: var(--cds-layer-02);
-  border-right-color: var(--cds-layer-02);
-  border-bottom-color: var(--cds-layer-02);
-}
-
-.pnode.is-neighbor {
-  z-index: 10;
-  opacity: 1;
-}
-
-.pnode.is-dimmed {
-  opacity: 0.14;
-}
-
-.pnode.is-query-hit {
-  outline: 2px solid var(--cds-interactive);
-  outline-offset: 1px;
-}
 
 .partner-badge {
   display: inline-block;
@@ -953,15 +767,20 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
-   Grid view — layout shell
+   View layout shells (Grid / Network)
 --------------------------------------------------------------------------- */
 
-/* Hide map-area when grid mode is active */
-#main.is-grid-mode #map-area { display: none; }
-#main.is-grid-mode #grid-area { display: flex; }
+/* Grid mode: show grid-area, hide network-area; sidebar collapses */
+#main.is-grid-mode #grid-area    { display: flex; }
+#main.is-grid-mode #network-area { display: none; }
 
-/* Sidebar in grid mode: collapses to zero width, expands in-flow on .is-open */
-#main.is-grid-mode #sidebar {
+/* Network mode: show network-area, hide grid-area; sidebar collapses */
+#main.is-network-mode #network-area { display: flex; }
+#main.is-network-mode #grid-area    { display: none; }
+
+/* Sidebar collapses in both non-map modes */
+#main.is-grid-mode #sidebar,
+#main.is-network-mode #sidebar {
   width: 0;
   min-width: 0;
   overflow: hidden;
@@ -969,17 +788,172 @@ body {
   transition: width 0.22s ease, min-width 0.22s ease;
 }
 
-#main.is-grid-mode #sidebar.is-open {
+#main.is-grid-mode #sidebar.is-open,
+#main.is-network-mode #sidebar.is-open {
   width: 360px;
   min-width: 360px;
   border-left: 1px solid var(--cds-border-subtle-01);
 }
 
 #grid-area {
-  display: none; /* shown only when is-grid-mode */
+  display: none;
   flex: 1;
   overflow: hidden;
   background: var(--cds-background);
+}
+
+/* ---------------------------------------------------------------------------
+   Network view
+--------------------------------------------------------------------------- */
+
+#network-area {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  overflow-y: auto;
+  background: var(--cds-background);
+  padding: 32px 40px 48px;
+  gap: 0;
+}
+
+.net-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  position: relative;
+  padding: 12px 0;
+}
+
+/* Subtle connector line between rows */
+.net-row + .net-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 100px;
+  right: 0;
+  height: 1px;
+  background: var(--cds-border-subtle-01);
+}
+
+.net-row-label {
+  width: 140px;
+  flex-shrink: 0;
+  padding-top: 14px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--cds-text-helper);
+  user-select: none;
+}
+
+.net-row-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  flex: 1;
+}
+
+/* Row 0 — single anchor card gets centred treatment */
+.net-row[data-row="0"] .net-row-cards {
+  justify-content: flex-start;
+}
+
+.net-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1.5px solid var(--cds-border-subtle-02);
+  border-left: 4px solid var(--net-color, var(--cds-interactive));
+  border-radius: 4px;
+  background: var(--cds-layer-01);
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.12s, box-shadow 0.12s, border-color 0.12s;
+  min-width: 200px;
+  max-width: 300px;
+  user-select: none;
+}
+
+.net-card:hover {
+  background: var(--cds-layer-hover-01);
+  border-top-color: var(--net-color, var(--cds-interactive));
+  border-right-color: var(--net-color, var(--cds-interactive));
+  border-bottom-color: var(--net-color, var(--cds-interactive));
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+.net-card-icon {
+  font-size: 18px;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+  color: var(--net-color, var(--cds-interactive));
+  font-family: var(--font-sans);
+  line-height: 1;
+}
+
+.net-card-body {
+  min-width: 0;
+}
+
+.net-card-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cds-text-primary);
+  line-height: 1.3;
+}
+
+.net-card-sub {
+  font-size: 11px;
+  color: var(--cds-text-helper);
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+/* Selected card */
+.net-card.is-selected {
+  background: color-mix(in srgb, var(--net-color, var(--cds-interactive)) 15%, var(--cds-layer-01));
+  border-top-color: var(--net-color, var(--cds-interactive));
+  border-right-color: var(--net-color, var(--cds-interactive));
+  border-bottom-color: var(--net-color, var(--cds-interactive));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--net-color, var(--cds-interactive)) 50%, transparent),
+              0 2px 12px rgba(0,0,0,0.15);
+}
+
+.net-card.is-selected .net-card-label {
+  color: var(--cds-text-primary);
+}
+
+/* Reachable (in path) card */
+.net-card.is-reachable {
+  background: color-mix(in srgb, var(--net-color, var(--cds-interactive)) 8%, var(--cds-layer-01));
+  border-top-color: color-mix(in srgb, var(--net-color, var(--cds-interactive)) 60%, transparent);
+  border-right-color: color-mix(in srgb, var(--net-color, var(--cds-interactive)) 60%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--net-color, var(--cds-interactive)) 60%, transparent);
+  opacity: 1;
+}
+
+/* Dimmed — not in current path */
+.net-card.is-dimmed {
+  opacity: 0.22;
+  filter: grayscale(0.5);
+}
+
+/* Dark-theme net card tweaks */
+[data-theme="dark"] .net-card {
+  background: var(--cds-layer-01);
+  border-top-color: var(--cds-border-subtle-02);
+  border-right-color: var(--cds-border-subtle-02);
+  border-bottom-color: var(--cds-border-subtle-02);
+}
+
+[data-theme="dark"] .net-card.is-selected {
+  background: color-mix(in srgb, var(--net-color, var(--cds-interactive)) 20%, var(--cds-layer-01));
+}
+
+[data-theme="dark"] .net-card.is-reachable {
+  background: color-mix(in srgb, var(--net-color, var(--cds-interactive)) 12%, var(--cds-layer-01));
 }
 
 /* ---------------------------------------------------------------------------
