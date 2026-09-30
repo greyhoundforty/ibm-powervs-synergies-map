@@ -1,0 +1,540 @@
+{
+  "generated_at": "2026-09-30T18:55:58.971487Z",
+  "datacenter_count": 26,
+  "all_machine_types": [
+    "e1050",
+    "e1080",
+    "e1150",
+    "e1180",
+    "s1022",
+    "s1122"
+  ],
+  "datacenters": [
+    {
+      "region": "che02",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": false,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "e1150",
+          "s1122",
+          "e1080",
+          "e1050",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "che03",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": false,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "s1122",
+          "e1050",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "dal10",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": false,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "e1080",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "dal12",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": true,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "s1122",
+          "e1080",
+          "e1050",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "dal14",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": false,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "s1122",
+          "e1080",
+          "e1050",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "eu-de-1",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": true,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "e1180",
+          "s1122",
+          "e1080",
+          "e1050",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "eu-de-2",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": true,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "e1080",
+          "e1050",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "in-mum-1",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": false,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "e1050",
+          "s1022"
+        ],
+        "dedicated": []
+      }
+    },
+    {
+      "region": "in-mum-2",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": false,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "e1050",
+          "s1022"
+        ],
+        "dedicated": []
+      }
+    },
+    {
+      "region": "lon04",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": true,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "e1080",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "lon06",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": true,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "mad02",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": false,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "s1122",
+          "e1080",
+          "e1050",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "mad04",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": false,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "e1080",
+          "e1050",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "mon01",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": true,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "s1122",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "osa21",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": true,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "s1122",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "sao01",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": true,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "e1050",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "sao04",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": false,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "sao05",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": false,
+        "dedicated_hosts": true,
+        "disaster_recovery": false,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "e1080",
+          "e1050",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "syd04",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": true,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "syd05",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": true,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "tok04",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": true,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "s1122",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "tor01",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": true,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "us-east",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": true,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "us-south",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": true,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "wdc06",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": false,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "s1122",
+          "e1080",
+          "e1050",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    },
+    {
+      "region": "wdc07",
+      "status": "active",
+      "capabilities": {
+        "cloud_connections": false,
+        "dedicated_hosts": true,
+        "disaster_recovery": true,
+        "network_security_groups": true,
+        "vpmem": true
+      },
+      "systems": {
+        "general": [
+          "e1080",
+          "e1050",
+          "s1022"
+        ],
+        "dedicated": [
+          "s1022"
+        ]
+      }
+    }
+  ]
+}

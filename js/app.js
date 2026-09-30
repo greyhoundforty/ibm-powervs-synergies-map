@@ -21,11 +21,14 @@ const state = {
   laneFilter: null,
   osFilter: null,
   chromeBound: false,
-  viewMode: "grid", // "network" | "grid" | "matrix"
+  viewMode: "grid", // "network" | "grid" | "matrix" | "availability"
   // Network view state
   netSelected: null,   // id of selected node in network view
   // Matrix view state
   matrixOs: null,      // selected OS id in matrix view
+  // Availability view state
+  availSystems: null,  // parsed available-systems.json
+  availFilter: null,   // selected machine type id, or null = all
 };
 
 const els = {
@@ -391,9 +394,10 @@ function renderLegend() {
 function renderViewSwitch() {
   if (!els.viewSwitch) return;
   const modes = [
-    { id: "grid",    label: "Grid"    },
-    { id: "matrix",  label: "OS Matrix" },
-    { id: "network", label: "Network" },
+    { id: "grid",         label: "Grid"         },
+    { id: "matrix",       label: "OS Matrix"    },
+    { id: "network",      label: "Network"      },
+    { id: "availability", label: "Availability" },
   ];
   els.viewSwitch.innerHTML = modes.map(({ id, label }) => {
     const active = state.viewMode === id;
@@ -407,18 +411,21 @@ function renderViewSwitch() {
       const main = document.getElementById("main");
       renderViewSwitch();
       // Tear down previous view area
-      ["grid-area", "network-area", "matrix-area"].forEach((id) => {
+      ["grid-area", "network-area", "matrix-area", "avail-area"].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.remove();
       });
-      main.classList.remove("is-grid-mode", "is-network-mode", "is-matrix-mode");
+      main.classList.remove("is-grid-mode", "is-network-mode", "is-matrix-mode", "is-avail-mode");
+      document.getElementById("sidebar").classList.remove("is-open");
       if (state.viewMode === "grid") {
         main.classList.add("is-grid-mode");
         renderGridView();
       } else if (state.viewMode === "matrix") {
         main.classList.add("is-matrix-mode");
-        document.getElementById("sidebar").classList.remove("is-open");
         renderMatrixView();
+      } else if (state.viewMode === "availability") {
+        main.classList.add("is-avail-mode");
+        renderAvailabilityView();
       } else {
         main.classList.add("is-network-mode");
         renderNetworkView();
@@ -1309,11 +1316,280 @@ function renderNetworkSidebar(nodeId) {
   `;
 }
 
+// ---------------------------------------------------------------------------
+// Availability view — hardware availability by datacenter + machine type filter
+// ---------------------------------------------------------------------------
+
+// Human-readable labels and categories for each machine type
+const MACHINE_META = {
+  e1050: { label: "e1050",  family: "Power10", arch: "POWER10", desc: "Entry Power10 scale-up" },
+  e1080: { label: "e1080",  family: "Power10", arch: "POWER10", desc: "Mid-range Power10 scale-up" },
+  e1150: { label: "e1150",  family: "Power11", arch: "POWER11", desc: "Entry Power11 scale-up" },
+  e1180: { label: "e1180",  family: "Power11", arch: "POWER11", desc: "Mid-range Power11 scale-up" },
+  s1022: { label: "s1022",  family: "Power10", arch: "POWER10", desc: "Power10 scale-out 2-socket" },
+  s1122: { label: "s1122",  family: "Power11", arch: "POWER11", desc: "Power11 scale-out 2-socket" },
+};
+
+const CAP_META = {
+  cloud_connections:       { label: "Cloud Connections",        abbr: "CC"  },
+  dedicated_hosts:         { label: "Dedicated Hosts",          abbr: "DH"  },
+  disaster_recovery:       { label: "Disaster Recovery",        abbr: "DR"  },
+  network_security_groups: { label: "Network Security Groups",  abbr: "NSG" },
+  vpmem:                   { label: "Virtual Persistent Memory",abbr: "vPM" },
+};
+
+// Region prefix → geographic label mapping for display grouping
+function regionGeo(region) {
+  if (/^us-east|wdc/.test(region))      return "US East";
+  if (/^us-south|dal/.test(region))     return "US South";
+  if (/^mon|tor/.test(region))          return "Canada";
+  if (/^sao/.test(region))              return "Brazil";
+  if (/^eu-de|fra/.test(region))        return "Germany";
+  if (/^lon/.test(region))              return "UK";
+  if (/^mad/.test(region))              return "Spain";
+  if (/^osa|tok/.test(region))          return "Japan";
+  if (/^syd/.test(region))              return "Australia";
+  if (/^che/.test(region))              return "India (Chennai)";
+  if (/^in-mum/.test(region))           return "India (Mumbai)";
+  return "Other";
+}
+
+const GEO_ORDER = [
+  "US East", "US South", "Canada", "Brazil",
+  "Germany", "UK", "Spain",
+  "India (Chennai)", "India (Mumbai)", "Japan", "Australia",
+  "Other",
+];
+
+function renderAvailabilityView() {
+  const main = document.getElementById("main");
+  let area = document.getElementById("avail-area");
+  if (!area) {
+    area = document.createElement("div");
+    area.id = "avail-area";
+    const sidebar = document.getElementById("sidebar");
+    main.insertBefore(area, sidebar);
+  }
+  area.innerHTML = "";
+
+  const data = state.availSystems;
+  if (!data) {
+    area.innerHTML = `<div class="avail-loading">Hardware availability data not loaded.</div>`;
+    return;
+  }
+
+  // --- Header bar ---
+  const header = document.createElement("div");
+  header.className = "avail-header";
+
+  const titleEl = document.createElement("div");
+  titleEl.className = "avail-title";
+  const genAt = new Date(data.generated_at);
+  const genStr = genAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  titleEl.innerHTML = `<strong>${data.datacenter_count} datacenters</strong> &nbsp;·&nbsp; <span class="avail-gen-date">Refreshed ${genStr}</span>`;
+  header.appendChild(titleEl);
+
+  // Machine type filter chips
+  const filterWrap = document.createElement("div");
+  filterWrap.className = "avail-filter";
+
+  const allBtn = document.createElement("button");
+  allBtn.type = "button";
+  allBtn.className = `avail-chip${!state.availFilter ? " is-active" : ""}`;
+  allBtn.textContent = "All hardware";
+  allBtn.setAttribute("aria-pressed", !state.availFilter ? "true" : "false");
+  allBtn.addEventListener("click", () => {
+    state.availFilter = null;
+    applyAvailabilityFilter();
+  });
+  filterWrap.appendChild(allBtn);
+
+  data.all_machine_types.forEach((mt) => {
+    const meta = MACHINE_META[mt] || { label: mt, family: "", desc: mt };
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = `avail-chip${state.availFilter === mt ? " is-active" : ""}`;
+    btn.dataset.mt = mt;
+    btn.setAttribute("aria-pressed", state.availFilter === mt ? "true" : "false");
+
+    const nameEl = document.createElement("span");
+    nameEl.className = "avail-chip-name";
+    nameEl.textContent = meta.label;
+    btn.appendChild(nameEl);
+
+    if (meta.family) {
+      const fam = document.createElement("span");
+      fam.className = `avail-chip-fam avail-chip-fam--${meta.family.toLowerCase().replace(/\s+/g, "")}`;
+      fam.textContent = meta.family;
+      btn.appendChild(fam);
+    }
+
+    btn.addEventListener("click", () => {
+      state.availFilter = state.availFilter === mt ? null : mt;
+      applyAvailabilityFilter();
+    });
+    filterWrap.appendChild(btn);
+  });
+
+  header.appendChild(filterWrap);
+  area.appendChild(header);
+
+  // --- Cards grid ---
+  const grid = document.createElement("div");
+  grid.className = "avail-grid";
+  grid.id = "avail-grid";
+
+  // Group datacenters by geography
+  const geoGroups = {};
+  data.datacenters.forEach((dc) => {
+    const geo = regionGeo(dc.region);
+    if (!geoGroups[geo]) geoGroups[geo] = [];
+    geoGroups[geo].push(dc);
+  });
+
+  GEO_ORDER.forEach((geo) => {
+    const dcs = geoGroups[geo];
+    if (!dcs || dcs.length === 0) return;
+
+    const group = document.createElement("div");
+    group.className = "avail-geo-group";
+
+    const geoLabel = document.createElement("div");
+    geoLabel.className = "avail-geo-label";
+    geoLabel.textContent = geo;
+    group.appendChild(geoLabel);
+
+    const cardsRow = document.createElement("div");
+    cardsRow.className = "avail-cards-row";
+
+    dcs.forEach((dc) => {
+      const card = buildDcCard(dc);
+      cardsRow.appendChild(card);
+    });
+
+    group.appendChild(cardsRow);
+    grid.appendChild(group);
+  });
+
+  area.appendChild(grid);
+  applyAvailabilityFilter();
+}
+
+function buildDcCard(dc) {
+  const card = document.createElement("div");
+  card.className = "avail-card";
+  card.dataset.region = dc.region;
+
+  // All machine types this DC supports (union of general + dedicated)
+  const allMts = new Set([...dc.systems.general, ...dc.systems.dedicated]);
+  card.dataset.mts = [...allMts].join(",");
+
+  // Region name
+  const regionEl = document.createElement("div");
+  regionEl.className = "avail-card-region";
+  regionEl.textContent = dc.region;
+  card.appendChild(regionEl);
+
+  // Machine type availability rows
+  const mtSection = document.createElement("div");
+  mtSection.className = "avail-card-mts";
+
+  const allTypes = Object.keys(MACHINE_META);
+  allTypes.forEach((mt) => {
+    const meta = MACHINE_META[mt];
+    const inGeneral   = dc.systems.general.includes(mt);
+    const inDedicated = dc.systems.dedicated.includes(mt);
+    if (!inGeneral && !inDedicated) return;
+
+    const row = document.createElement("div");
+    row.className = "avail-mt-row";
+    row.dataset.mt = mt;
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = `avail-mt-name avail-mt-name--${meta.family.toLowerCase().replace(/\s+/g, "")}`;
+    nameSpan.textContent = mt;
+    row.appendChild(nameSpan);
+
+    const badges = document.createElement("span");
+    badges.className = "avail-mt-badges";
+
+    if (inGeneral) {
+      const b = document.createElement("span");
+      b.className = "avail-badge avail-badge--general";
+      b.textContent = "Shared";
+      badges.appendChild(b);
+    }
+    if (inDedicated) {
+      const b = document.createElement("span");
+      b.className = "avail-badge avail-badge--dedicated";
+      b.textContent = "Dedicated";
+      badges.appendChild(b);
+    }
+
+    row.appendChild(badges);
+    mtSection.appendChild(row);
+  });
+
+  card.appendChild(mtSection);
+
+  // Capability badges
+  const capSection = document.createElement("div");
+  capSection.className = "avail-card-caps";
+
+  Object.entries(CAP_META).forEach(([key, meta]) => {
+    const pill = document.createElement("span");
+    const enabled = dc.capabilities[key];
+    pill.className = `avail-cap-pill${enabled ? " is-enabled" : " is-disabled"}`;
+    pill.title = meta.label;
+    pill.textContent = meta.abbr;
+    capSection.appendChild(pill);
+  });
+
+  card.appendChild(capSection);
+  return card;
+}
+
+function applyAvailabilityFilter() {
+  const area = document.getElementById("avail-area");
+  if (!area) return;
+
+  const mt = state.availFilter;
+
+  // Update chips
+  area.querySelectorAll(".avail-chip").forEach((chip) => {
+    const chipMt = chip.dataset.mt || null;
+    const isActive = chipMt === mt;
+    chip.classList.toggle("is-active", isActive);
+    chip.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+
+  // Update cards — hide those that don't have the selected machine type
+  area.querySelectorAll(".avail-card").forEach((card) => {
+    const mts = card.dataset.mts ? card.dataset.mts.split(",") : [];
+    const visible = !mt || mts.includes(mt);
+    card.classList.toggle("is-hidden", !visible);
+    card.classList.toggle("is-highlighted", Boolean(mt && visible));
+  });
+
+  // Highlight the matching MT rows inside visible cards
+  area.querySelectorAll(".avail-mt-row").forEach((row) => {
+    row.classList.toggle("is-focused", Boolean(mt && row.dataset.mt === mt));
+    row.classList.toggle("is-dimmed", Boolean(mt && row.dataset.mt !== mt));
+  });
+
+  // Update geo group visibility — hide groups where all cards are hidden
+  area.querySelectorAll(".avail-geo-group").forEach((group) => {
+    const hasVisible = group.querySelectorAll(".avail-card:not(.is-hidden)").length > 0;
+    group.classList.toggle("is-empty", !hasVisible);
+  });
+}
+
 async function load() {
-  const [playsDoc, products, connections] = await Promise.all([
+  const [playsDoc, products, connections, availSystems] = await Promise.all([
     fetch("./data/powervs/plays.json", { cache: "no-store" }).then((r) => r.json()),
     fetch("./data/powervs/products.json", { cache: "no-store" }).then((r) => r.json()),
     fetch("./data/powervs/connections.json", { cache: "no-store" }).then((r) => r.json()),
+    fetch("./data/powervs/available-systems.json", { cache: "no-store" }).then((r) => r.json()),
   ]);
 
   state.viewId = "powervs";
@@ -1323,6 +1599,7 @@ async function load() {
   state.categories = playsDoc.categories;
   state.products = products;
   state.connections = connections;
+  state.availSystems = availSystems;
   state.selectedId = null;
   state.laneFilter = null;
 
@@ -1334,7 +1611,7 @@ async function load() {
   renderSidebar();
   document.getElementById("main").classList.add("is-grid-mode");
   renderGridView();
-  if (els.footerHint) els.footerHint.textContent = "Grid: click an OS to highlight integrations · Network: click a node to trace the connection path";
+  if (els.footerHint) els.footerHint.textContent = "Grid: click an OS to highlight integrations · Network: click a node to trace the connection path · Availability: filter by machine type";
 }
 
 load().catch((err) => {
