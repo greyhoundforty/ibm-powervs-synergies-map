@@ -21,9 +21,11 @@ const state = {
   laneFilter: null,
   osFilter: null,
   chromeBound: false,
-  viewMode: "grid", // "network" | "grid"
+  viewMode: "grid", // "network" | "grid" | "matrix"
   // Network view state
   netSelected: null,   // id of selected node in network view
+  // Matrix view state
+  matrixOs: null,      // selected OS id in matrix view
 };
 
 const els = {
@@ -390,6 +392,7 @@ function renderViewSwitch() {
   if (!els.viewSwitch) return;
   const modes = [
     { id: "grid",    label: "Grid"    },
+    { id: "matrix",  label: "OS Matrix" },
     { id: "network", label: "Network" },
   ];
   els.viewSwitch.innerHTML = modes.map(({ id, label }) => {
@@ -403,12 +406,20 @@ function renderViewSwitch() {
       state.viewMode = btn.dataset.view;
       const main = document.getElementById("main");
       renderViewSwitch();
+      // Tear down previous view area
+      ["grid-area", "network-area", "matrix-area"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+      });
+      main.classList.remove("is-grid-mode", "is-network-mode", "is-matrix-mode");
       if (state.viewMode === "grid") {
         main.classList.add("is-grid-mode");
-        main.classList.remove("is-network-mode");
         renderGridView();
+      } else if (state.viewMode === "matrix") {
+        main.classList.add("is-matrix-mode");
+        document.getElementById("sidebar").classList.remove("is-open");
+        renderMatrixView();
       } else {
-        main.classList.remove("is-grid-mode");
         main.classList.add("is-network-mode");
         renderNetworkView();
       }
@@ -682,6 +693,173 @@ function bindChrome() {
 }
 
 // ---------------------------------------------------------------------------
+// Matrix view — OS × Integration columns, no lines
+// ---------------------------------------------------------------------------
+//
+// Full-width view. Left column = OS selectors. Right = integration categories
+// rendered as columns of cards. Clicking an OS highlights supported cards and
+// dims unsupported ones. No sidebar, no lines — pure visual matrix.
+// ---------------------------------------------------------------------------
+
+const MATRIX_OS = [
+  { id: "aix",   label: "AIX",       color: "#3ddbd9" },
+  { id: "ibmi",  label: "IBM i",     color: "#4589ff" },
+  { id: "linux", label: "Linux",     color: "#42be65" },
+  { id: "ocp",   label: "OpenShift", color: "#ff832b" },
+];
+
+function renderMatrixView() {
+  const main = document.getElementById("main");
+  let area = document.getElementById("matrix-area");
+  if (!area) {
+    area = document.createElement("div");
+    area.id = "matrix-area";
+    const sidebar = document.getElementById("sidebar");
+    main.insertBefore(area, sidebar);
+  }
+  area.innerHTML = "";
+
+  // --- Left: OS selector column ---
+  const osCol = document.createElement("div");
+  osCol.className = "matrix-os-col";
+
+  const osHeading = document.createElement("div");
+  osHeading.className = "matrix-col-heading";
+  osHeading.textContent = "Operating System";
+  osCol.appendChild(osHeading);
+
+  const osBody = document.createElement("div");
+  osBody.className = "matrix-os-body";
+
+  MATRIX_OS.forEach(({ id, label, color }) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "matrix-os-btn";
+    btn.dataset.os = id;
+    btn.style.setProperty("--os-color", color);
+    if (state.matrixOs === id) btn.classList.add("is-active");
+    btn.setAttribute("aria-pressed", state.matrixOs === id ? "true" : "false");
+
+    const swatch = document.createElement("span");
+    swatch.className = "matrix-os-swatch";
+    btn.appendChild(swatch);
+
+    const text = document.createElement("span");
+    text.textContent = label;
+    btn.appendChild(text);
+
+    const count = document.createElement("span");
+    count.className = "matrix-os-count";
+    const n = state.products.filter(
+      (p) => GRID_INTEGRATION_CATS.includes(p.cat) && productMatchesOs(p, id) && (p.os && p.os.length > 0)
+    ).length;
+    count.textContent = n;
+    btn.appendChild(count);
+
+    btn.addEventListener("click", () => {
+      state.matrixOs = state.matrixOs === id ? null : id;
+      applyMatrixHighlights();
+    });
+    osBody.appendChild(btn);
+  });
+
+  osCol.appendChild(osBody);
+  area.appendChild(osCol);
+
+  // --- Right: integration columns ---
+  const integCols = document.createElement("div");
+  integCols.className = "matrix-integ-cols";
+
+  GRID_INTEGRATION_CATS.forEach((catId) => {
+    const cat = state.categories.find((c) => c.id === catId);
+    if (!cat) return;
+    const play = Object.values(state.plays).find((p) => p.cat === catId);
+    const products = state.products.filter((p) => p.cat === catId);
+    if (products.length === 0) return;
+
+    const col = document.createElement("div");
+    col.className = "matrix-cat-col";
+    col.dataset.cat = catId;
+
+    const heading = document.createElement("div");
+    heading.className = "matrix-col-heading";
+    if (play) heading.style.setProperty("--col-color", `var(--play-${play.id})`);
+    heading.innerHTML = `<span class="matrix-col-dot" style="background:var(--col-color)"></span>${escapeHtml(cat.label)}`;
+    col.appendChild(heading);
+
+    const body = document.createElement("div");
+    body.className = "matrix-col-body";
+
+    products.forEach((product) => {
+      const card = document.createElement("div");
+      card.className = "matrix-card";
+      card.dataset.id = product.id;
+      if (play) card.style.setProperty("--card-color", `var(--play-${play.id})`);
+
+      const name = document.createElement("div");
+      name.className = "matrix-card-name";
+      name.textContent = product.label;
+      card.appendChild(name);
+
+      // OS support pips
+      if (product.os && product.os.length > 0) {
+        const osPips = document.createElement("div");
+        osPips.className = "matrix-card-os";
+        const OS_COLOR = { aix: "#3ddbd9", ibmi: "#4589ff", linux: "#42be65", ocp: "#ff832b" };
+        const OS_SHORT = { aix: "AIX", ibmi: "i", linux: "Lin", ocp: "OCP" };
+        product.os.forEach((o) => {
+          const pip = document.createElement("span");
+          pip.className = "matrix-card-os-pip";
+          pip.style.color = OS_COLOR[o] || "currentColor";
+          pip.style.borderColor = OS_COLOR[o] || "currentColor";
+          pip.dataset.os = o;
+          pip.textContent = OS_SHORT[o] || o;
+          osPips.appendChild(pip);
+        });
+        card.appendChild(osPips);
+      }
+
+      body.appendChild(card);
+    });
+
+    col.appendChild(body);
+    integCols.appendChild(col);
+  });
+
+  area.appendChild(integCols);
+  applyMatrixHighlights();
+}
+
+function applyMatrixHighlights() {
+  const area = document.getElementById("matrix-area");
+  if (!area) return;
+
+  const activeOs = state.matrixOs;
+
+  // Update OS button states
+  area.querySelectorAll(".matrix-os-btn").forEach((btn) => {
+    const isActive = btn.dataset.os === activeOs;
+    btn.classList.toggle("is-active", isActive);
+    btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+
+  // Update card highlight states
+  area.querySelectorAll(".matrix-card").forEach((card) => {
+    const id = card.dataset.id;
+    const product = productById(id);
+    if (!product) return;
+    const matches = !activeOs || productMatchesOs(product, activeOs);
+    card.classList.toggle("is-highlighted", Boolean(activeOs && matches));
+    card.classList.toggle("is-dimmed", Boolean(activeOs && !matches));
+  });
+
+  // Highlight matching OS pips on cards
+  area.querySelectorAll(".matrix-card-os-pip").forEach((pip) => {
+    pip.classList.toggle("is-active-os", pip.dataset.os === activeOs);
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Network view — PowerVS connectivity topology
 // ---------------------------------------------------------------------------
 //
@@ -716,9 +894,13 @@ const NET_NODES = [
   {
     id: "secure", row: 1, label: "Secure Connections", icon: "🔒", color: "#007d79",
     sub: "Private / dedicated path",
-    desc: "Private, encrypted, or dedicated connectivity that never traverses the public internet. " +
-          "Includes IBM Cloud Direct Link (dedicated private WAN), VPC site-to-site VPN (IPSec over internet), " +
-          "Classic Network Gateway appliances, and VPC-hosted firewall / proxy appliances. " +
+    desc: "Private, encrypted, or dedicated connectivity to PowerVS. " +
+          "Includes IBM Cloud Direct Link (dedicated private WAN bypassing the internet entirely), " +
+          "VPC site-to-site VPN (IPSec-encrypted tunnel over the internet), " +
+          "Classic Network Gateway appliances (Juniper vSRX / FortiGate / ASAv), " +
+          "and VPC-hosted firewall / proxy appliances (Palo Alto VM-Series, Fortinet, Check Point). " +
+          "Note: Classic Network Gateway and VPC Firewall / Proxy are dual-purpose — they also handle " +
+          "public internet (HTTP/HTTPS/IBM i ports) north-south traffic and appear under Public Connections too. " +
           "All secure paths route through Transit Gateway into the PowerVS workspace.",
   },
   {
@@ -754,21 +936,29 @@ const NET_NODES = [
     docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-overview",
   },
   {
-    id: "classic_gw", row: 2, label: "Classic Network Gateway", icon: "⇒", color: "#007d79",
-    sub: "Classic infrastructure gateway appliance",
+    id: "classic_gw", row: 2, label: "Classic Network Gateway", icon: "⇒", color: "#6929c4",
+    sub: "Secure + Public · Classic infrastructure gateway appliance",
     desc: "IBM Cloud Classic Infrastructure Gateway appliances — Juniper vSRX, Fortinet vFSA, or Cisco ASAv — providing " +
           "stateful firewall, NAT, and routing at the Classic network edge. " +
+          "Serves both secure (private WAN) and public internet traffic: the appliance can front public ports (HTTP/HTTPS, IBM i 5250, SSH) " +
+          "as well as terminate private connectivity from on-premises networks via Direct Link Connect. " +
           "Used when a PowerVS workspace is connected to Classic Infrastructure via a classic link rather than directly into VPC. " +
-          "The gateway appliance provides full port flexibility beyond the default PowerVS firewall ports.",
+          "The gateway provides full custom port flexibility beyond the fixed default PowerVS firewall ports, " +
+          "including any ports required by IBM i LPARs or custom applications.",
     docsUrl: "https://cloud.ibm.com/docs/gateway-appliance?topic=gateway-appliance-getting-started",
   },
   {
-    id: "vpc_fw", row: 2, label: "VPC Firewall / Proxy", icon: "🛡", color: "#007d79",
-    sub: "Virtual network function in VPC",
-    desc: "Third-party or IBM-provided virtual firewall or proxy appliance (Virtual Network Function / VNF) " +
-          "deployed inside a VPC. Inspects and filters traffic between the internet or on-premises networks and PowerVS workloads. " +
-          "Options include Palo Alto VM-Series, Fortinet FortiGate, Check Point CloudGuard, or open-source pfSense/OPNsense. " +
-          "Sits inline in the VPC routing path; Route Tables steer traffic through the appliance before it reaches TGW → PowerVS.",
+    id: "vpc_fw", row: 2, label: "VPC Firewall / Proxy", icon: "🛡", color: "#6929c4",
+    sub: "Secure + Public · Virtual network function in transit VPC",
+    desc: "A virtual firewall or proxy appliance (VNF) deployed in a transit VPC handles both secure and public internet traffic. " +
+          "For public north-south traffic: internet traffic enters via a Floating IP on the firewall's untrust interface, " +
+          "is inspected and NAT'd, then exits through a Public Gateway on the outside subnet. " +
+          "Flow: Internet → FIP → PA untrust NIC → PA trust NIC → TGW → PowerVS. " +
+          "For private/secure traffic: on-premises traffic arrives via Direct Link or VPN and is inspected before routing to PowerVS. " +
+          "East-west traffic between spoke VPCs bypasses the firewall and is secured by VPC Security Groups and Network ACLs. " +
+          "Options include Palo Alto VM-Series (single or HA pair with NLB route mode), Fortinet FortiGate, Check Point CloudGuard. " +
+          "HA: Two firewall VSIs fronted by an NLB in route mode provide active/active redundancy with sub-second failover. " +
+          "IBM Cloud VPC fabric constraint: only TCP/UDP/ICMP are supported — ESP/AH/GRE/VRRP/OSPF are dropped; IPsec requires NAT-T (UDP 4500).",
     docsUrl: "https://cloud.ibm.com/docs/vpc?topic=vpc-about-vnf",
   },
 
@@ -884,7 +1074,10 @@ const NET_EDGES = [
   { from: "secure",      to: "classic_gw"  },
   { from: "secure",      to: "vpc_fw"      },
   // public → entry
+  // classic_gw and vpc_fw serve BOTH secure and public — also reachable from public intent
   { from: "public",      to: "managed_public" },
+  { from: "public",      to: "classic_gw"     },
+  { from: "public",      to: "vpc_fw"         },
   { from: "public",      to: "public_gw"      },
   { from: "public",      to: "vpc_nlb"        },
   // managed public → PowerVS NSG only (no VPC layer; vSRX is IBM-managed)
@@ -895,6 +1088,7 @@ const NET_EDGES = [
   { from: "vpc_vpn",     to: "tgw"         },
   { from: "vpc_vpn",     to: "route_tables"},
   { from: "classic_gw",  to: "tgw"         },
+  { from: "classic_gw",  to: "route_tables"},
   { from: "vpc_fw",      to: "tgw"         },
   { from: "vpc_fw",      to: "route_tables"},
   { from: "public_gw",   to: "tgw"         },
