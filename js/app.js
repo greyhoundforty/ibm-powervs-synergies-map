@@ -774,9 +774,22 @@ const NET_NODES = [
 
   // Row 2 — entry mechanism (public branch)
   {
+    id: "managed_public", row: 2, label: "Managed Public Network", icon: "⊙", color: "#ff832b",
+    sub: "Per-instance public VLAN · IBM-managed Juniper vSRX",
+    desc: "Enable a public network directly on the PowerVS instance at provisioning time using the 'Public networks' toggle " +
+          "(visible in Network interfaces during instance creation). " +
+          "IBM attaches a public VLAN to the instance and routes traffic through an IBM-managed Juniper vSRX firewall. " +
+          "No Transit Gateway, VPC, or NLB is required — this is the simplest public option. " +
+          "Fixed firewall ports open inbound: 22 (SSH), 443 (HTTPS), 992 (IBM i 5250 SSL), ICMP. " +
+          "Additional IBM i LPAR ports open: 2005, 2007, 2010, 2012, 9470, 9475, 9476. " +
+          "Port 6443 is open in most data centers (not WDC04 or DAL13). " +
+          "The port set is fixed — extra ports require a customer-managed firewall appliance connected via Direct Link Connect instead.",
+    docsUrl: "https://cloud.ibm.com/docs/power-iaas?topic=power-iaas-network-security",
+  },
+  {
     id: "public_gw", row: 2, label: "VPC Public Gateway", icon: "↗", color: "#ff832b",
-    sub: "Outbound-only public egress",
-    desc: "A Public Gateway attached to a VPC subnet provides outbound-only public internet access. " +
+    sub: "VPC outbound-only public egress",
+    desc: "A Public Gateway attached to a VPC subnet provides outbound-only public internet access for the VPC/NLB-based public path. " +
           "No inbound connections are permitted through a Public Gateway — only return traffic for outbound-initiated flows. " +
           "For PowerVS outbound internet: the LPAR sends traffic to its default gateway → TGW → VPC → NLB (routing mode) → Public Gateway → internet. " +
           "The NLB in routing mode acts as the routing gateway between the TGW and the public-gateway-attached subnet.",
@@ -871,8 +884,11 @@ const NET_EDGES = [
   { from: "secure",      to: "classic_gw"  },
   { from: "secure",      to: "vpc_fw"      },
   // public → entry
-  { from: "public",      to: "public_gw"   },
-  { from: "public",      to: "vpc_nlb"     },
+  { from: "public",      to: "managed_public" },
+  { from: "public",      to: "public_gw"      },
+  { from: "public",      to: "vpc_nlb"        },
+  // managed public → PowerVS NSG only (no VPC layer; vSRX is IBM-managed)
+  { from: "managed_public", to: "pvs_nsg"     },
   // entry → routing
   { from: "direct_link", to: "tgw"         },
   { from: "direct_link", to: "route_tables"},
